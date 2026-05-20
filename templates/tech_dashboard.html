@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}Painel do Técnico - InfraControl{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h2>Bem-vindo, Técnico {{ current_user.nome }} (Equipe: {{ current_user.equipe }})</h2>
+    <div class="dashboard-actions">
+        <button class="btn btn-primary" onclick="showSection('dash-graficos')">Visão Geral</button>
+        <button class="btn btn-secondary" onclick="showSection('atribuidos')">Atribuídos</button>
+        <button class="btn btn-secondary" onclick="showSection('em-atendimento')">Em Atendimento</button>
+        <button class="btn btn-secondary" onclick="showSection('concluidos')">Concluídos</button>
+    </div>
+</div>
+
+<!-- GRÁFICOS -->
+<div id="dash-graficos" class="dashboard-section">
+    <h3>Dashboard da Equipe {{ current_user.equipe }}</h3>
+    <div class="form-row" style="margin-top: 2rem;">
+        <div class="form-group" style="background: var(--bg-card); padding: 1rem; border-radius: 8px;">
+            <canvas id="chartStatus"></canvas>
+        </div>
+        <div class="form-group" style="background: var(--bg-card); padding: 1rem; border-radius: 8px;">
+            <canvas id="chartPrioridade"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- ATRIBUÍDOS -->
+<div id="atribuidos" class="dashboard-section" style="display: none;">
+    <h3>Chamados Atribuídos</h3>
+    <div class="ticket-list">
+        {% for chamado in atribuidos %}
+        <div class="ticket-card">
+            <div class="ticket-header">
+                <h4>Chamado #{{ chamado.id }} - {{ chamado.categoria }}</h4>
+                <span class="badge badge-{{ chamado.prioridade|lower }}">{{ chamado.prioridade }}</span>
+            </div>
+            <div class="ticket-body">
+                <p><strong>Problema:</strong> {{ chamado.problema }}</p>
+                <p><strong>Local:</strong> {{ chamado.setor_local.nome }}</p>
+                <p><strong>Líder:</strong> {% if chamado.tecnico_lider_id == current_user.id %}Você{% else %}Outro{% endif %}</p>
+            </div>
+            <div class="ticket-footer" style="gap: 10px;">
+                <button class="btn btn-info" onclick="visualizarChamado({{ chamado.id }})">Visualizar</button>
+                {% if chamado.tecnico_lider_id == current_user.id %}
+                <button class="btn btn-primary" onclick="atualizarStatus({{ chamado.id }}, 'ATENDIMENTO INICIADO')">Iniciar Atendimento</button>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <p>Nenhum chamado atribuído no momento.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- EM ATENDIMENTO -->
+<div id="em-atendimento" class="dashboard-section" style="display: none;">
+    <h3>Chamados em Atendimento</h3>
+    <div class="ticket-list">
+        {% for chamado in em_atendimento %}
+        <div class="ticket-card">
+            <div class="ticket-header">
+                <h4>Chamado #{{ chamado.id }} - {{ chamado.categoria }}</h4>
+                <span class="badge badge-{{ chamado.prioridade|lower }}">{{ chamado.prioridade }}</span>
+            </div>
+            <div class="ticket-body">
+                <p><strong>Iniciado em:</strong> {{ chamado.data_inicio.strftime('%d/%m/%Y %H:%M') if chamado.data_inicio else '' }}</p>
+                <p><strong>Problema:</strong> {{ chamado.problema }}</p>
+            </div>
+            <div class="ticket-footer" style="gap: 10px;">
+                <button class="btn btn-info" onclick="visualizarChamado({{ chamado.id }})">Visualizar</button>
+                {% if chamado.tecnico_lider_id == current_user.id %}
+                <button class="btn btn-secondary" style="color:var(--secondary-color); border-color:var(--secondary-color);" onclick="atualizarStatus({{ chamado.id }}, 'CONCLUÍDO')">Concluir Chamado</button>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <p>Nenhum chamado em atendimento.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- CONCLUÍDOS -->
+<div id="concluidos" class="dashboard-section" style="display: none;">
+    <h3>Chamados Concluídos</h3>
+    <!-- Filtros de data e botão exportar -->
+    <div class="filters" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+        <input type="date" class="input-field" id="data_inicio" title="Data Inicial">
+        <input type="date" class="input-field" id="data_fim" title="Data Final">
+        <button class="btn btn-secondary">Filtrar</button>
+        <button class="btn btn-primary">Exportar PDF</button>
+    </div>
+    <div class="ticket-list">
+        {% for chamado in concluidos %}
+        <div class="ticket-card">
+            <div class="ticket-header">
+                <h4>Chamado #{{ chamado.id }}</h4>
+                <span class="badge badge-{{ chamado.prioridade|lower }}">{{ chamado.prioridade }}</span>
+            </div>
+            <div class="ticket-body">
+                <p><strong>Concluído em:</strong> {{ chamado.data_conclusao.strftime('%d/%m/%Y %H:%M') if chamado.data_conclusao else '' }}</p>
+                <p><strong>Problema:</strong> {{ chamado.problema }}</p>
+            </div>
+            <div class="ticket-footer">
+                <button class="btn btn-info" onclick="visualizarChamado({{ chamado.id }})">Visualizar</button>
+            </div>
+        </div>
+        {% else %}
+        <p>Nenhum chamado concluído.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Reutilizando o modal de visualização (simples por enquanto) -->
+<div id="modal-chamado" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3 id="modal-titulo">Detalhes do Chamado</h3>
+        <div id="modal-detalhes-conteudo"></div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function showSection(sectionId) {
+        document.querySelectorAll('.dashboard-section').forEach(el => el.style.display = 'none');
+        document.getElementById(sectionId).style.display = 'block';
+    }
+
+    function atualizarStatus(chamadoId, novoStatus) {
+        fetch(`/api/chamados/${chamadoId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status: novoStatus})
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert('Status atualizado com sucesso!');
+            window.location.reload();
+        });
+    }
+
+    function visualizarChamado(id) {
+        fetch(`/api/chamados/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('modal-titulo').innerText = `Chamado #${data.id}`;
+                document.getElementById('modal-detalhes-conteudo').innerHTML = `<p>Status Atual: ${data.status}</p><p>Categoria: ${data.categoria}</p>`;
+                document.getElementById('modal-chamado').style.display = 'block';
+            });
+    }
+
+    function closeModal() {
+        document.getElementById('modal-chamado').style.display = 'none';
+    }
+
+    // Chart.js init
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/dashboard/metricas')
+            .then(res => res.json())
+            .then(data => {
+                const ctxStatus = document.getElementById('chartStatus').getContext('2d');
+                new Chart(ctxStatus, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Em Atendimento', 'Concluídos'],
+                        datasets: [{
+                            data: [data.em_atendimento, data.concluidos],
+                            backgroundColor: ['#f59e0b', '#10b981'],
+                            borderColor: '#1e293b'
+                        }]
+                    },
+                    options: { plugins: { title: { display: true, text: 'Status dos Chamados (Equipe)', color: '#fff' }, legend: { labels: { color: '#fff' } } } }
+                });
+
+                // Mock data for priority chart since API metrics is simple
+                const ctxPrio = document.getElementById('chartPrioridade').getContext('2d');
+                new Chart(ctxPrio, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Alta', 'Média', 'Baixa'],
+                        datasets: [{
+                            label: 'Quantidade',
+                            data: [2, 5, 3], // mock
+                            backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6']
+                        }]
+                    },
+                    options: { plugins: { title: { display: true, text: 'Prioridades', color: '#fff' }, legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } }
+                });
+            });
+    });
+</script>
+{% endblock %}

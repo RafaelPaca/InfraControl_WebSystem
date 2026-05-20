@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Painel do Usuário - InfraControl{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h2>Bem-vindo, {{ current_user.nome }}</h2>
+    <div class="dashboard-actions">
+        <button class="btn btn-primary" onclick="showSection('novo-chamado')">Abrir Novo Chamado</button>
+        <button class="btn btn-secondary" onclick="showSection('lista-chamados')">Meus Chamados Abertos</button>
+    </div>
+</div>
+
+<!-- SEÇÃO DE ABRIR CHAMADO -->
+<div id="novo-chamado" class="dashboard-section" style="display: none;">
+    <h3>Abrir Chamado</h3>
+    <form id="form-novo-chamado" class="modern-form">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="setor">Setor/Local:</label>
+                <select id="setor" name="setor" required class="input-field">
+                    <option value="">Selecione...</option>
+                    <option value="RECEPÇÃO">RECEPÇÃO</option>
+                    <option value="RH">RH</option>
+                    <option value="ADMINISTRAÇÃO">ADMINISTRAÇÃO</option>
+                    <option value="ALMOXARIFADO">ALMOXARIFADO</option>
+                    <option value="SETOR DE VENDAS">SETOR DE VENDAS</option>
+                    <option value="SETOR DE TI">SETOR DE TI</option>
+                    <option value="SANITÁRIO MASCULINO - TÉRREO">SANITÁRIO MASCULINO - TÉRREO</option>
+                    <option value="SANITÁRIO FEMININO - TÉRREO">SANITÁRIO FEMININO - TÉRREO</option>
+                    <option value="CORREDOR TÉRREO">CORREDOR TÉRREO</option>
+                    <option value="ESTACIONAMENTO">ESTACIONAMENTO</option>
+                    <option value="EXPEDIÇÃO">EXPEDIÇÃO</option>
+                    <option value="SANITÁRIO MASCULINO - 1° ANDAR">SANITÁRIO MASCULINO - 1° ANDAR</option>
+                    <option value="SANITÁRIO FEMININO - 1° ANDAR">SANITÁRIO FEMININO - 1° ANDAR</option>
+                    <option value="CORREDOR 1° ANDAR">CORREDOR 1° ANDAR</option>
+                    <option value="COPA">COPA</option>
+                    <option value="VESTIÁRIO MASCULINO">VESTIÁRIO MASCULINO</option>
+                    <option value="VESTIÁRIO FEMININO">VESTIÁRIO FEMININO</option>
+                    <option value="OUTRO SETOR/LOCAL">OUTRO SETOR/LOCAL</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="categoria">Categoria:</label>
+                <select id="categoria" name="categoria" required class="input-field">
+                    <option value="">Selecione...</option>
+                    <option value="MANUTENÇÃO ELÉTRICA">MANUTENÇÃO ELÉTRICA</option>
+                    <option value="MANUTENÇÃO HIDRÁULICA">MANUTENÇÃO HIDRÁULICA</option>
+                    <option value="MANUTENÇÃO ESTRUTURAL/CIVIL">MANUTENÇÃO ESTRUTURAL/CIVIL</option>
+                    <option value="CLIMATIZAÇÃO">CLIMATIZAÇÃO</option>
+                    <option value="SERVIÇOS GERAIS">SERVIÇOS GERAIS</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="problema">Problema:</label>
+                <select id="problema" name="problema" required class="input-field" disabled>
+                    <option value="">Selecione a categoria primeiro...</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="prioridade">Prioridade:</label>
+                <select id="prioridade" name="prioridade" required class="input-field">
+                    <option value="">Selecione...</option>
+                    <option value="BAIXA">BAIXA</option>
+                    <option value="MÉDIA">MÉDIA</option>
+                    <option value="ALTA">ALTA</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="detalhes">Mais detalhes do problema (máximo 500 caracteres):</label>
+            <textarea id="detalhes" name="detalhes" maxlength="500" class="input-field"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="imagens">Upload de Imagem (Até 3 arquivos):</label>
+            <input type="file" id="imagens" name="imagens" accept="image/*" multiple class="input-field">
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="btn-abrir-chamado">Abrir Chamado</button>
+            <button type="button" class="btn btn-secondary" onclick="showSection('lista-chamados')">Cancelar</button>
+        </div>
+    </form>
+</div>
+
+<!-- SEÇÃO DE ACOMPANHAR CHAMADOS -->
+<div id="lista-chamados" class="dashboard-section">
+    <h3>Acompanhar Chamados Abertos</h3>
+    <div class="filters">
+        <label for="filtro-status">Filtrar por Status:</label>
+        <select id="filtro-status" class="input-field" onchange="filtrarChamados()">
+            <option value="TODOS">TODOS</option>
+            <option value="ABERTO">CHAMADO ABERTO</option>
+            <option value="EQUIPE TÉCNICA ACIONADA">EQUIPE TÉCNICA ACIONADA</option>
+            <option value="ATENDIMENTO INICIADO">ATENDIMENTO INICIADO</option>
+            <option value="CONCLUÍDO">CONCLUÍDO</option>
+        </select>
+    </div>
+
+    <div class="ticket-list" id="ticket-list-container">
+        {% for chamado in chamados %}
+        <div class="ticket-card" data-status="{{ chamado.status }}">
+            <div class="ticket-header">
+                <h4>Chamado #{{ chamado.id }} - {{ chamado.categoria }}</h4>
+                <span class="badge badge-{{ chamado.prioridade|lower }}">{{ chamado.prioridade }}</span>
+            </div>
+            <div class="ticket-body">
+                <p><strong>Setor:</strong> {{ chamado.setor_local.nome }}</p>
+                <p><strong>Problema:</strong> {{ chamado.problema }}</p>
+                <p><strong>Status:</strong> <span class="status-text">{{ chamado.status }}</span></p>
+            </div>
+            <div class="ticket-footer">
+                <button class="btn btn-info" onclick="visualizarChamado({{ chamado.id }})">Visualizar</button>
+            </div>
+        </div>
+        {% else %}
+        <p class="no-data">Nenhum chamado encontrado.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal Visualizar Chamado -->
+<div id="modal-chamado" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3 id="modal-titulo">Detalhes do Chamado</h3>
+        <div id="modal-body">
+            <!-- Timeline será inserida via JS -->
+            <div class="timeline-container" id="timeline-container"></div>
+            <div id="modal-detalhes-conteudo"></div>
+            <div id="modal-tempo-estimado" class="ml-prediction"></div>
+        </div>
+        <div class="modal-actions" id="modal-actions">
+            <!-- Botão de excluir aparecerá aqui se status = Aberto -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/ticket_logic.js') }}"></script>
+<script>
+    function showSection(sectionId) {
+        document.getElementById('novo-chamado').style.display = 'none';
+        document.getElementById('lista-chamados').style.display = 'none';
+        document.getElementById(sectionId).style.display = 'block';
+    }
+
+    function filtrarChamados() {
+        const filtro = document.getElementById('filtro-status').value;
+        const cards = document.querySelectorAll('.ticket-card');
+        
+        cards.forEach(card => {
+            if (filtro === 'TODOS' || card.dataset.status === filtro) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

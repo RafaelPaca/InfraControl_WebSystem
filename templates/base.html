@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}InfraControl{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Pular para o conteúdo principal</a>
+    
+    <header class="app-header">
+        <div class="logo">
+            <h1>InfraControl</h1>
+        </div>
+        <nav aria-label="Navegação Principal">
+            <ul>
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('main.index') }}" aria-current="page">Painel</a></li>
+                    <li><a href="#">Meu Perfil</a></li>
+                    <li><a href="{{ url_for('main.logout') }}">Sair ({{ current_user.nome }})</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('main.login') }}">Entrar</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main id="main-content" class="container">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-messages" aria-live="polite">
+            {% for message in messages %}
+              <div class="alert">{{ message }}</div>
+            {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="app-footer">
+        <p>&copy; 2026 InfraControl - Gestão Inteligente de Manutenção</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
