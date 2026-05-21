@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const opcoesProblema = {
         'MANUTENÇÃO ELÉTRICA': [
             'SOBRECARGA ELÉTRICA', 'FALHA DE ILUMINAÇÃO', 'PROBLEMAS/FALHA DE GERADOR', 
-            'PROBLEMAS COM PÁRA-RAIOS', 'PROBELMAS COM TOAMADAS/DISJUNTORES', 'OUTRO'
+            'PROBLEMAS COM PÁRA-RAIOS', 'PROBLEMAS COM TOMADAS/DISJUNTORES', 'OUTRO'
         ],
         'MANUTENÇÃO HIDRÁULICA': [
             'ENTUPIMENTOS DE PIAS/VASOS SANITÁRIOS', 'ENTUPIMENTOS DE CANALIZAÇÃO', 

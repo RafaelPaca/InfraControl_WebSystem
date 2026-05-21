@@ -6,25 +6,42 @@
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h2>Visão Geral do Gestor - {{ current_user.nome }}</h2>
-    <div class="dashboard-actions">
-        <button class="btn btn-primary" onclick="showSection('dash-graficos')">Visão Geral</button>
-        <button class="btn btn-secondary" onclick="showSection('abertos')">Chamados Abertos</button>
-        <button class="btn btn-secondary" onclick="showSection('em-atendimento')">Em Atendimento</button>
-        <button class="btn btn-secondary" onclick="showSection('concluidos')">Concluídos</button>
-        <button class="btn btn-secondary" onclick="showSection('equipes')">Gestão de Equipes</button>
+
+<!-- MENU PRINCIPAL DO GESTOR -->
+<div id="menu-gestor" class="dashboard-section" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center;">
+    <h2 style="font-size: 2.2rem; margin-bottom: 1.5rem; color: var(--text-main); font-weight: 700;">Bem-vindo, {{ current_user.nome }}</h2>
+    <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2.5rem; max-width: 500px; line-height: 1.6;">Selecione uma das opções abaixo para gerenciar chamados, equipes ou acompanhar métricas operacionais.</p>
+    <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+        <button class="btn btn-primary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);" onclick="showSection('dash-graficos')">
+            <span>📊</span> Visão Geral
+        </button>
+        <button class="btn btn-secondary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);" onclick="showSection('abertos')">
+            <span>🔴</span> Chamados Abertos
+        </button>
+        <button class="btn btn-secondary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);" onclick="showSection('em-atendimento')">
+            <span>🟡</span> Em Atendimento
+        </button>
+        <button class="btn btn-secondary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);" onclick="showSection('concluidos')">
+            <span>🟢</span> Concluídos
+        </button>
+        <button class="btn btn-secondary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);" onclick="showSection('equipes')">
+            <span>👥</span> Gestão de Equipes
+        </button>
     </div>
 </div>
 
 <!-- GRÁFICOS -->
-<div id="dash-graficos" class="dashboard-section">
-    <h3>Dashboard Geral</h3>
-    <div class="form-row" style="margin-top: 2rem;">
-        <div class="form-group" style="background: var(--bg-card); padding: 1rem; border-radius: 8px;">
+<div id="dash-graficos" class="dashboard-section" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+        <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Visão Geral do Painel</h3>
+        <button class="btn btn-secondary" onclick="showSection('menu-gestor')">Voltar ao Menu</button>
+    </div>
+    
+    <div class="form-row" style="margin-top: 2rem; justify-content: center; flex-wrap: wrap;">
+        <div class="form-group" style="background: rgba(255, 255, 255, 0.55); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); max-width: 450px; width: 100%; margin: 10px;">
             <canvas id="chartGeralStatus"></canvas>
         </div>
-        <div class="form-group" style="background: var(--bg-card); padding: 1rem; border-radius: 8px;">
+        <div class="form-group" style="background: rgba(255, 255, 255, 0.55); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); max-width: 450px; width: 100%; margin: 10px;">
             <canvas id="chartGeralCategoria"></canvas>
         </div>
     </div>
@@ -32,7 +49,11 @@
 
 <!-- ABERTOS -->
 <div id="abertos" class="dashboard-section" style="display: none;">
-    <h3>Chamados Abertos</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+        <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Chamados Abertos</h3>
+        <button class="btn btn-secondary" onclick="showSection('menu-gestor')">Voltar ao Menu</button>
+    </div>
+
     <div class="ticket-list">
         {% for chamado in abertos %}
         <div class="ticket-card">
@@ -49,14 +70,20 @@
             </div>
         </div>
         {% else %}
-        <p>Nenhum chamado aberto.</p>
+        <div style="background: var(--bg-card); backdrop-filter: var(--glass-blur); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; width: 100%; text-align: center;">
+            <p class="no-data" style="margin: 0;">Nenhum chamado aberto no momento.</p>
+        </div>
         {% endfor %}
     </div>
 </div>
 
 <!-- EM ATENDIMENTO -->
 <div id="em-atendimento" class="dashboard-section" style="display: none;">
-    <h3>Chamados em Atendimento</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+        <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Chamados em Atendimento</h3>
+        <button class="btn btn-secondary" onclick="showSection('menu-gestor')">Voltar ao Menu</button>
+    </div>
+
     <div class="ticket-list">
         {% for chamado in em_atendimento %}
         <div class="ticket-card">
@@ -69,14 +96,20 @@
             </div>
         </div>
         {% else %}
-        <p>Nenhum chamado em atendimento.</p>
+        <div style="background: var(--bg-card); backdrop-filter: var(--glass-blur); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; width: 100%; text-align: center;">
+            <p class="no-data" style="margin: 0;">Nenhum chamado em atendimento no momento.</p>
+        </div>
         {% endfor %}
     </div>
 </div>
 
 <!-- CONCLUIDOS -->
 <div id="concluidos" class="dashboard-section" style="display: none;">
-    <h3>Chamados Concluídos</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+        <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Chamados Concluídos</h3>
+        <button class="btn btn-secondary" onclick="showSection('menu-gestor')">Voltar ao Menu</button>
+    </div>
+
     <div class="ticket-list">
         {% for chamado in concluidos %}
         <div class="ticket-card">
@@ -89,45 +122,61 @@
             </div>
         </div>
         {% else %}
-        <p>Nenhum chamado concluído.</p>
+        <div style="background: var(--bg-card); backdrop-filter: var(--glass-blur); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; width: 100%; text-align: center;">
+            <p class="no-data" style="margin: 0;">Nenhum chamado concluído no momento.</p>
+        </div>
         {% endfor %}
     </div>
 </div>
 
 <!-- GESTÃO DE EQUIPES -->
 <div id="equipes" class="dashboard-section" style="display: none;">
-    <h3>Gestão de Equipes (Técnicos)</h3>
-    <table style="width: 100%; border-collapse: collapse; margin-top: 1rem; color: white;">
-        <thead>
-            <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
-                <th>Nome</th>
-                <th>E-mail</th>
-                <th>Equipe Atual</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for tec in tecnicos %}
-            <tr style="border-bottom: 1px solid var(--border-color);">
-                <td style="padding: 10px 0;">{{ tec.nome }} {{ tec.sobrenome }}</td>
-                <td>{{ tec.email_corporativo }}</td>
-                <td>{{ tec.equipe or 'Sem equipe' }}</td>
-                <td>
-                    <select class="input-field" style="width: auto; display: inline-block;" id="equipe-{{ tec.id }}">
-                        <option value="ELÉTRICA" {% if tec.equipe == 'ELÉTRICA' %}selected{% endif %}>Elétrica</option>
-                        <option value="HIDRÁULICA" {% if tec.equipe == 'HIDRÁULICA' %}selected{% endif %}>Hidráulica</option>
-                        <option value="ESTRUTURAL" {% if tec.equipe == 'ESTRUTURAL' %}selected{% endif %}>Estrutural</option>
-                        <option value="CLIMATIZAÇÃO" {% if tec.equipe == 'CLIMATIZAÇÃO' %}selected{% endif %}>Climatização</option>
-                        <option value="SERVIÇOS GERAIS" {% if tec.equipe == 'SERVIÇOS GERAIS' %}selected{% endif %}>Serviços Gerais</option>
-                    </select>
-                    <button class="btn btn-primary" onclick="vincularEquipe({{ tec.id }})">Vincular</button>
-                </td>
-            </tr>
-            {% else %}
-            <tr><td colspan="4">Nenhum técnico cadastrado.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+        <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Gestão de Equipes (Técnicos)</h3>
+        <button class="btn btn-secondary" onclick="showSection('menu-gestor')">Voltar ao Menu</button>
+    </div>
+
+    <div style="background: var(--bg-card); backdrop-filter: var(--glass-blur); border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; padding: 1rem;">
+        <table style="width: 100%; border-collapse: collapse; color: var(--text-main); text-align: left;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
+                    <th style="padding: 15px;">Nome</th>
+                    <th style="padding: 15px;">E-mail</th>
+                    <th style="padding: 15px;">Equipe Atual</th>
+                    <th style="padding: 15px;">Atuação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tec in tecnicos %}
+                <tr style="border-bottom: 1px solid var(--border-color); transition: background-color 0.2s;">
+                    <td style="padding: 15px; font-weight: 500;">{{ tec.nome }} {{ tec.sobrenome }}</td>
+                    <td style="padding: 15px; color: var(--text-muted);">{{ tec.email_corporativo }}</td>
+                    <td style="padding: 15px;">
+                        <span class="badge" style="background-color: rgba(5, 150, 105, 0.1); color: var(--secondary-color); font-weight: 600; padding: 0.35rem 0.75rem;">
+                            {{ tec.equipe or 'Sem equipe' }}
+                        </span>
+                    </td>
+                    <td style="padding: 15px;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select class="input-field" style="width: auto; padding: 0.5rem; display: inline-block; min-width: 140px;" id="equipe-{{ tec.id }}">
+                                <option value="ELÉTRICA" {% if tec.equipe == 'ELÉTRICA' %}selected{% endif %}>Elétrica</option>
+                                <option value="HIDRÁULICA" {% if tec.equipe == 'HIDRÁULICA' %}selected{% endif %}>Hidráulica</option>
+                                <option value="ESTRUTURAL" {% if tec.equipe == 'ESTRUTURAL' %}selected{% endif %}>Estrutural</option>
+                                <option value="CLIMATIZAÇÃO" {% if tec.equipe == 'CLIMATIZAÇÃO' %}selected{% endif %}>Climatização</option>
+                                <option value="SERVIÇOS GERAIS" {% if tec.equipe == 'SERVIÇOS GERAIS' %}selected{% endif %}>Serviços Gerais</option>
+                            </select>
+                            <button class="btn btn-primary" style="padding: 0.5rem 1.25rem;" onclick="vincularEquipe({{ tec.id }})">Vincular</button>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="padding: 30px; text-align: center; color: var(--text-muted);">Nenhum técnico cadastrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <!-- Modal Acionar Equipe -->
@@ -143,7 +192,6 @@
                 <label for="selecao-lider">Selecione o Líder da Equipe (responsável por iniciar):</label>
                 <select id="selecao-lider" class="input-field" required>
                     {% for tec in tecnicos %}
-                    <!-- Na prática, via JS, filtraria apenas os técnicos da equipe correspondente -->
                     <option value="{{ tec.id }}" data-equipe="{{ tec.equipe }}">{{ tec.nome }} ({{ tec.equipe }})</option>
                     {% endfor %}
                 </select>
@@ -181,9 +229,7 @@
         document.getElementById('acionamento-chamado-id').value = chamadoId;
         document.getElementById('acionamento-info').innerText = `Atribuindo chamado #${chamadoId} para Categoria: ${categoria}`;
         
-        // Filtra options do select baseado na equipe correspondente à categoria
         const selectLider = document.getElementById('selecao-lider');
-        // Simplificação: 'MANUTENÇÃO ELÉTRICA' -> 'ELÉTRICA'
         let equipeAlvo = '';
         if(categoria.includes('ELÉTRICA')) equipeAlvo = 'ELÉTRICA';
         if(categoria.includes('HIDRÁULICA')) equipeAlvo = 'HIDRÁULICA';
@@ -242,11 +288,11 @@
                         labels: ['Abertos', 'Em Atendimento', 'Concluídos'],
                         datasets: [{
                             data: [data.abertos, data.em_atendimento, data.concluidos],
-                            backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
-                            borderColor: '#1e293b'
+                            backgroundColor: ['#dc2626', '#d97706', '#059669'],
+                            borderColor: '#ffffff'
                         }]
                     },
-                    options: { plugins: { title: { display: true, text: 'Status Geral', color: '#fff' }, legend: { labels: { color: '#fff' } } } }
+                    options: { plugins: { title: { display: true, text: 'Status Geral', color: '#1e293b' }, legend: { labels: { color: '#1e293b' } } } }
                 });
 
                 const ctxCat = document.getElementById('chartGeralCategoria').getContext('2d');
@@ -256,11 +302,11 @@
                         labels: ['Elétrica', 'Hidráulica', 'Estrutural', 'Clima', 'Gerais'],
                         datasets: [{
                             label: 'Chamados',
-                            data: [5, 2, 4, 1, 6], // mock para visualização
-                            backgroundColor: '#3b82f6'
+                            data: [5, 2, 4, 1, 6],
+                            backgroundColor: '#2563eb'
                         }]
                     },
-                    options: { plugins: { title: { display: true, text: 'Por Categoria', color: '#fff' }, legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } }
+                    options: { plugins: { title: { display: true, text: 'Por Categoria', color: '#1e293b' }, legend: { labels: { color: '#1e293b' } } }, scales: { y: { ticks: { color: '#475569' } }, x: { ticks: { color: '#475569' } } } }
                 });
             });
     });

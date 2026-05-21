@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Gestão de Usuários - InfraControl{% endblock %}
+
+{% block content %}
+<!-- SEÇÃO DE GESTÃO DE USUÁRIOS -->
+<div id="gestao-usuarios" class="dashboard-section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+        <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Gestão de Usuários</h3>
+        <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+            <span>↩️</span> Voltar ao Menu
+        </a>
+    </div>
+    
+    <div style="background: var(--bg-card); backdrop-filter: var(--glass-blur); border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; padding: 1rem;">
+        <table style="width: 100%; border-collapse: collapse; color: var(--text-main); text-align: left;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 600;">
+                    <th style="padding: 15px;">Nome</th>
+                    <th style="padding: 15px;">E-mail</th>
+                    <th style="padding: 15px;">Perfil Atual</th>
+                    <th style="padding: 15px;">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr style="border-bottom: 1px solid var(--border-color); transition: background-color 0.2s;">
+                    <td style="padding: 15px; font-weight: 500;">{{ usuario.nome }} {{ usuario.sobrenome }}</td>
+                    <td style="padding: 15px; color: var(--text-muted);">{{ usuario.email_corporativo }}</td>
+                    <td style="padding: 15px;">
+                        <span class="badge" style="background-color: rgba(37, 99, 235, 0.1); color: var(--primary-color); font-weight: 600; padding: 0.35rem 0.75rem;">
+                            {{ usuario.perfil }}
+                        </span>
+                    </td>
+                    <td style="padding: 15px;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <select class="input-field" style="width: auto; padding: 0.5rem; display: inline-block; min-width: 140px;" id="perfil-{{ usuario.id }}" {% if usuario.id == current_user.id %}disabled{% endif %}>
+                                <option value="Usuario" {% if usuario.perfil == 'Usuario' %}selected{% endif %}>Usuário</option>
+                                <option value="Tecnico" {% if usuario.perfil == 'Tecnico' %}selected{% endif %}>Técnico</option>
+                                <option value="Gestor" {% if usuario.perfil == 'Gestor' %}selected{% endif %}>Gestor</option>
+                                <option value="Admin" {% if usuario.perfil == 'Admin' %}selected{% endif %}>Administrador</option>
+                            </select>
+                            {% if usuario.id != current_user.id %}
+                            <button class="btn btn-primary" style="padding: 0.5rem 1.25rem;" onclick="alterarPerfil({{ usuario.id }})">Salvar</button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="padding: 30px; text-align: center; color: var(--text-muted);">Nenhum usuário cadastrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function alterarPerfil(usuarioId) {
+        const novoPerfil = document.getElementById(`perfil-${usuarioId}`).value;
+        fetch(`/api/usuarios/${usuarioId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({perfil: novoPerfil})
+        }).then(() => {
+            alert('Perfil atualizado com sucesso!');
+            window.location.reload();
+        });
+    }
+</script>
+{% endblock %}

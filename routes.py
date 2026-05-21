@@ -117,8 +117,15 @@ def manager_dashboard():
 def admin_dashboard():
     if current_user.perfil != 'Admin':
         return redirect(url_for('main.index'))
+    return render_template('admin_dashboard.html')
+
+@bp.route('/dashboard/admin/usuarios')
+@login_required
+def admin_usuarios():
+    if current_user.perfil != 'Admin':
+        return redirect(url_for('main.index'))
     usuarios = Usuario.query.all()
-    return render_template('admin_dashboard.html', usuarios=usuarios)
+    return render_template('admin_usuarios.html', usuarios=usuarios)
 
 # --- API ENDPOINTS ---
 
@@ -230,4 +237,26 @@ def api_previsao():
     hist = data.get('historico_tecnico', 'BOM')
     tempo = predict_time(cat, prio, setor, hist)
     return jsonify({'tempo_estimado_horas': tempo})
+
+@bp.route('/meu-perfil', methods=['GET', 'POST'])
+@login_required
+def meu_perfil():
+
+    if request.method == 'POST':
+
+        novo_email = request.form.get('email')
+        nova_senha = request.form.get('senha')
+
+        current_user.email_corporativo = novo_email
+
+        if nova_senha and nova_senha.strip() != "":
+            current_user.set_senha(nova_senha)
+
+        db.session.commit()
+
+        flash('Perfil atualizado com sucesso!')
+
+        return redirect(url_for('main.meu_perfil'))
+
+    return render_template('my_profile.html')
 

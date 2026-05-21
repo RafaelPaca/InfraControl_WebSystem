@@ -2,59 +2,20 @@
 {% block title %}Painel do Administrador - InfraControl{% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h2>Visão Geral do Administrador - {{ current_user.nome }}</h2>
+<!-- MENU PRINCIPAL DO ADMINISTRADOR -->
+<div id="menu-admin" class="dashboard-section" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center;">
+    <h2 style="font-size: 2.2rem; margin-bottom: 1.5rem; color: var(--text-main); font-weight: 700;">Painel de Controle do Administrador</h2>
+    <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2.5rem; max-width: 500px; line-height: 1.6;">Selecione uma das opções abaixo para gerenciar usuários ou visualizar os painéis operacionais do sistema.</p>
+    <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('main.user_dashboard') }}" class="btn btn-primary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); text-decoration: none;">
+            <span>👤</span> Painel do Usuário
+        </a>
+        <a href="{{ url_for('main.manager_dashboard') }}" class="btn btn-info" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2); text-decoration: none; color: white;">
+            <span>📊</span> Painel Gestor
+        </a>
+        <a href="{{ url_for('main.admin_usuarios') }}" class="btn btn-secondary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); text-decoration: none;">
+            <span>⚙️</span> Gestão de Usuários
+        </a>
+    </div>
 </div>
-
-<div class="dashboard-section">
-    <h3>Gestão de Usuários</h3>
-    <table style="width: 100%; border-collapse: collapse; margin-top: 1rem; color: white; background: var(--bg-card); border-radius: 8px; overflow: hidden;">
-        <thead style="background: rgba(0,0,0,0.3);">
-            <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
-                <th style="padding: 15px;">Nome</th>
-                <th style="padding: 15px;">E-mail</th>
-                <th style="padding: 15px;">Perfil Atual</th>
-                <th style="padding: 15px;">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for usuario in usuarios %}
-            <tr style="border-bottom: 1px solid var(--border-color);">
-                <td style="padding: 15px;">{{ usuario.nome }} {{ usuario.sobrenome }}</td>
-                <td style="padding: 15px;">{{ usuario.email_corporativo }}</td>
-                <td style="padding: 15px;">{{ usuario.perfil }}</td>
-                <td style="padding: 15px;">
-                    <select class="input-field" style="width: auto; display: inline-block;" id="perfil-{{ usuario.id }}" {% if usuario.id == current_user.id %}disabled{% endif %}>
-                        <option value="Usuario" {% if usuario.perfil == 'Usuario' %}selected{% endif %}>Usuário</option>
-                        <option value="Tecnico" {% if usuario.perfil == 'Tecnico' %}selected{% endif %}>Técnico</option>
-                        <option value="Gestor" {% if usuario.perfil == 'Gestor' %}selected{% endif %}>Gestor</option>
-                        <option value="Admin" {% if usuario.perfil == 'Admin' %}selected{% endif %}>Administrador</option>
-                    </select>
-                    {% if usuario.id != current_user.id %}
-                    <button class="btn btn-primary" onclick="alterarPerfil({{ usuario.id }})">Salvar</button>
-                    {% endif %}
-                </td>
-            </tr>
-            {% else %}
-            <tr><td colspan="4" style="padding: 15px;">Nenhum usuário cadastrado.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    function alterarPerfil(usuarioId) {
-        const novoPerfil = document.getElementById(`perfil-${usuarioId}`).value;
-        fetch(`/api/usuarios/${usuarioId}`, {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({perfil: novoPerfil})
-        }).then(() => {
-            alert('Perfil atualizado com sucesso!');
-            window.location.reload();
-        });
-    }
-</script>
 {% endblock %}
