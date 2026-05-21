@@ -1,18 +1,18 @@
 :root {
-    --primary-color: #3b82f6;
-    --primary-hover: #2563eb;
-    --secondary-color: #10b981;
-    --secondary-hover: #059669;
-    --bg-dark: #0f172a;
-    --bg-card: rgba(30, 41, 59, 0.7);
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --border-color: rgba(255, 255, 255, 0.1);
-    --glass-blur: blur(12px);
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --secondary-color: #059669;
+    --secondary-hover: #047857;
+    --bg-body: transparent;
+    --bg-card: rgba(255, 255, 255, 0.88);
+    --text-main: #1e293b;
+    --text-muted: #475569;
+    --border-color: rgba(0, 0, 0, 0.12);
+    --glass-blur: blur(14px);
     
-    --badge-baixa: #3b82f6;
-    --badge-media: #f59e0b;
-    --badge-alta: #ef4444;
+    --badge-baixa: #2563eb;
+    --badge-media: #d97706;
+    --badge-alta: #dc2626;
 }
 
 * {
@@ -23,7 +23,7 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(30, 27, 75, 0.8)), url('../images/infracontrol_background.png') no-repeat center center fixed;
+    background: url('../images/infracontrol_background.png') no-repeat center center fixed;
     background-size: cover;
     color: var(--text-main);
     min-height: 100vh;
@@ -47,24 +47,25 @@ body {
 }
 
 a:focus, button:focus, input:focus, select:focus, textarea:focus {
-    outline: 2px solid var(--secondary-color);
+    outline: 2px solid var(--primary-color);
     outline-offset: 2px;
 }
 
 /* Header */
 .app-header {
-    background: var(--bg-card);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: var(--glass-blur);
     padding: 1rem 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 .app-header .logo h1 {
     font-size: 1.5rem;
     font-weight: 700;
-    background: linear-gradient(to right, #60a5fa, #34d399);
+    background: linear-gradient(to right, #2563eb, #059669);
     -webkit-background-clip: text;
     color: transparent;
 }
@@ -107,7 +108,7 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     border: 1px solid var(--border-color);
     width: 100%;
     max-width: 450px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     animation: fadeIn 0.5s ease-out;
 }
 .auth-box h2 {
@@ -129,14 +130,14 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     padding: 0.75rem;
     border-radius: 8px;
     border: 1px solid var(--border-color);
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(255, 255, 255, 0.7);
     color: var(--text-main);
     font-family: inherit;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 .input-field:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 /* Botões */
@@ -157,15 +158,22 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 }
 .btn-primary:hover {
     background-color: var(--primary-hover);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 .btn-secondary {
-    background-color: transparent;
+    background-color: rgba(255,255,255,0.6);
     border: 1px solid var(--border-color);
     color: var(--text-main);
 }
 .btn-secondary:hover {
-    background-color: rgba(255,255,255,0.1);
+    background-color: rgba(255,255,255,0.9);
+}
+.btn-info {
+    background-color: #0ea5e9;
+    color: white;
+}
+.btn-info:hover {
+    background-color: #0284c7;
 }
 .btn-link {
     background: none;
@@ -213,6 +221,16 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2rem;
+    background: var(--bg-card);
+    backdrop-filter: var(--glass-blur);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+.dashboard-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 .dashboard-section {
     animation: fadeIn 0.3s ease-out;
@@ -233,7 +251,7 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 }
 .ticket-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 .ticket-header {
     display: flex;
@@ -244,6 +262,7 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 .ticket-header h4 {
     font-size: 1.1rem;
     margin-right: 1rem;
+    color: var(--text-main);
 }
 .badge {
     padding: 0.25rem 0.75rem;
@@ -252,9 +271,9 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     font-weight: 700;
     text-transform: uppercase;
 }
-.badge-baixa { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; }
-.badge-média { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; }
-.badge-alta { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
+.badge-baixa { background-color: rgba(37, 99, 235, 0.15); color: #1d4ed8; }
+.badge-média { background-color: rgba(217, 119, 6, 0.15); color: #b45309; }
+.badge-alta { background-color: rgba(220, 38, 38, 0.15); color: #b91c1c; }
 
 .ticket-body {
     margin-bottom: 1.5rem;
@@ -272,6 +291,19 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     justify-content: flex-end;
 }
 
+/* Filtros */
+.filters {
+    background: var(--bg-card);
+    backdrop-filter: var(--glass-blur);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
 /* Modais e Timeline */
 .modal {
     display: none; 
@@ -282,28 +314,29 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     width: 100%; 
     height: 100%; 
     overflow: auto; 
-    background-color: rgba(0,0,0,0.6); 
+    background-color: rgba(0,0,0,0.35); 
     backdrop-filter: blur(4px);
 }
 .modal-content {
-    background: var(--bg-dark);
+    background: #ffffff;
     margin: 5% auto; 
     padding: 2rem;
     border: 1px solid var(--border-color);
     border-radius: 16px;
     width: 80%;
     max-width: 600px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
     animation: zoomIn 0.3s ease-out;
 }
 .close {
-    color: #aaa;
+    color: #64748b;
     float: right;
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
 }
 .close:hover {
-    color: white;
+    color: var(--text-main);
 }
 
 /* Timeline */
@@ -321,7 +354,7 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     left: 0;
     width: 100%;
     height: 2px;
-    background: var(--border-color);
+    background: #e2e8f0;
     z-index: 0;
 }
 .timeline li {
@@ -337,18 +370,19 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
     display: block;
     width: 12px;
     height: 12px;
-    background: var(--bg-dark);
-    border: 2px solid var(--border-color);
+    background: #ffffff;
+    border: 2px solid #cbd5e1;
     border-radius: 50%;
     margin: 0 auto 10px auto;
 }
 .timeline li.active {
     color: var(--secondary-color);
+    font-weight: 600;
 }
 .timeline li.active::before {
     background: var(--secondary-color);
     border-color: var(--secondary-color);
-    box-shadow: 0 0 10px var(--secondary-color);
+    box-shadow: 0 0 10px rgba(5, 150, 105, 0.4);
 }
 
 .flash-messages {
@@ -356,20 +390,30 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 }
 .alert {
     padding: 1rem;
-    background-color: rgba(239, 68, 68, 0.2);
+    background-color: rgba(220, 38, 38, 0.1);
     border-left: 4px solid var(--badge-alta);
-    color: white;
+    color: #991b1b;
     border-radius: 4px;
     margin-bottom: 1rem;
 }
 
-.app-footer {
-    text-align: center;
-    padding: 1.5rem;
+.no-data {
     color: var(--text-muted);
-    font-size: 0.875rem;
-    border-top: 1px solid var(--border-color);
+    text-align: center;
+    padding: 2rem;
+}
+
+
+
+/* Tabelas (Admin e Gestor) */
+table {
     background: var(--bg-card);
+    backdrop-filter: var(--glass-blur);
+    border-radius: 12px;
+    overflow: hidden;
+}
+table th {
+    background: rgba(0,0,0,0.04);
 }
 
 @keyframes fadeIn {

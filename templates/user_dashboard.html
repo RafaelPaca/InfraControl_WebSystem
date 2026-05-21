@@ -2,11 +2,17 @@
 {% block title %}Painel do Usuário - InfraControl{% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h2>Bem-vindo, {{ current_user.nome }}</h2>
-    <div class="dashboard-actions">
-        <button class="btn btn-primary" onclick="showSection('novo-chamado')">Abrir Novo Chamado</button>
-        <button class="btn btn-secondary" onclick="showSection('lista-chamados')">Meus Chamados Abertos</button>
+<!-- MENU PRINCIPAL -->
+<div id="menu-principal" class="dashboard-section" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center;">
+    <h2 style="font-size: 2.2rem; margin-bottom: 1.5rem; color: var(--text-main); font-weight: 700;">Bem-vindo, {{ current_user.nome }}</h2>
+    <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2.5rem; max-width: 500px; line-height: 1.6;">Selecione uma das opções abaixo para gerenciar seus chamados de manutenção de forma rápida e inteligente.</p>
+    <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+        <button class="btn btn-primary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);" onclick="showSection('novo-chamado')">
+            <span>➕</span> Abrir Novo Chamado
+        </button>
+        <button class="btn btn-secondary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);" onclick="showSection('lista-chamados')">
+            <span>📋</span> Meus Chamados Abertos
+        </button>
     </div>
 </div>
 
@@ -84,14 +90,17 @@
 
         <div class="form-actions">
             <button type="submit" class="btn btn-primary" id="btn-abrir-chamado">Abrir Chamado</button>
-            <button type="button" class="btn btn-secondary" onclick="showSection('lista-chamados')">Cancelar</button>
+            <button type="button" class="btn btn-secondary" onclick="showSection('menu-principal')">Voltar ao Menu</button>
         </div>
     </form>
 </div>
 
 <!-- SEÇÃO DE ACOMPANHAR CHAMADOS -->
-<div id="lista-chamados" class="dashboard-section">
-    <h3>Acompanhar Chamados Abertos</h3>
+<div id="lista-chamados" class="dashboard-section" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+        <h3 style="margin: 0;">Acompanhar Chamados Abertos</h3>
+        <button class="btn btn-secondary" onclick="showSection('menu-principal')">Voltar ao Menu</button>
+    </div>
     <div class="filters">
         <label for="filtro-status">Filtrar por Status:</label>
         <select id="filtro-status" class="input-field" onchange="filtrarChamados()">
@@ -148,6 +157,7 @@
 <script src="{{ url_for('static', filename='js/ticket_logic.js') }}"></script>
 <script>
     function showSection(sectionId) {
+        document.getElementById('menu-principal').style.display = 'none';
         document.getElementById('novo-chamado').style.display = 'none';
         document.getElementById('lista-chamados').style.display = 'none';
         document.getElementById(sectionId).style.display = 'block';
