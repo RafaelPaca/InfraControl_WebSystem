@@ -13,7 +13,7 @@
     <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2.5rem; max-width: 500px; line-height: 1.6;">Selecione uma das opções abaixo para gerenciar chamados, equipes ou acompanhar métricas operacionais.</p>
     <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
         <button class="btn btn-primary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);" onclick="showSection('dash-graficos')">
-            <span>📊</span> Visão Geral
+            <span>📊</span> Painel de Análise
         </button>
         <button class="btn btn-secondary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);" onclick="showSection('abertos')">
             <span>🔴</span> Chamados Abertos
@@ -33,8 +33,8 @@
 <!-- GRÁFICOS -->
 <div id="dash-graficos" class="dashboard-section" style="display: none;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
-        <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Visão Geral do Painel</h3>
-        <button class="btn btn-secondary" onclick="showSection('menu-gestor')">Voltar ao Menu</button>
+        <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Dashboard</h3>
+        
     </div>
     
     <div class="form-row" style="margin-top: 2rem; justify-content: center; flex-wrap: wrap;">
@@ -51,22 +51,34 @@
 <div id="abertos" class="dashboard-section" style="display: none;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
         <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Chamados Abertos</h3>
-        <button class="btn btn-secondary" onclick="showSection('menu-gestor')">Voltar ao Menu</button>
+  
     </div>
 
     <div class="ticket-list">
         {% for chamado in abertos %}
-        <div class="ticket-card">
+        <div class="ticket-card"
+             data-id="{{ chamado.id }}"
+             data-categoria="{{ chamado.categoria }}"
+             data-problema="{{ chamado.problema }}"
+             data-prioridade="{{ chamado.prioridade }}"
+             data-setor="{{ chamado.setor_local.nome if chamado.setor_local else 'N/A' }}"
+             data-detalhes="{{ chamado.detalhes or 'Sem detalhes adicionais.' }}"
+             data-usuario="{{ chamado.solicitante.nome ~ ' ' ~ chamado.solicitante.sobrenome if chamado.solicitante else 'N/A' }}"
+             data-tempo="{{ chamado.tempo_estimado }}"
+             data-abertura="{{ chamado.data_abertura.strftime('%d/%m/%Y %H:%M') if chamado.data_abertura else '' }}">
             <div class="ticket-header">
                 <h4>Chamado #{{ chamado.id }} - {{ chamado.categoria }}</h4>
                 <span class="badge badge-{{ chamado.prioridade|lower }}">{{ chamado.prioridade }}</span>
             </div>
             <div class="ticket-body">
                 <p><strong>Problema:</strong> {{ chamado.problema }}</p>
+                <p><strong>Setor:</strong> {{ chamado.setor_local.nome if chamado.setor_local else 'N/A' }}</p>
                 <p><strong>Previsão (ML):</strong> {{ chamado.tempo_estimado }} h</p>
             </div>
             <div class="ticket-footer">
-                <button class="btn btn-primary" onclick="abrirModalAcionamento({{ chamado.id }}, '{{ chamado.categoria }}')">Acionar Equipe Técnica</button>
+                <button class="btn btn-secondary" style="display:flex; align-items:center; gap:8px;" onclick="abrirModalDetalhes(this.closest('.ticket-card'))">
+                    <span>🔍</span> Visualizar
+                </button>
             </div>
         </div>
         {% else %}
@@ -81,7 +93,7 @@
 <div id="em-atendimento" class="dashboard-section" style="display: none;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
         <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Chamados em Atendimento</h3>
-        <button class="btn btn-secondary" onclick="showSection('menu-gestor')">Voltar ao Menu</button>
+
     </div>
 
     <div class="ticket-list">
@@ -107,7 +119,7 @@
 <div id="concluidos" class="dashboard-section" style="display: none;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
         <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Chamados Concluídos</h3>
-        <button class="btn btn-secondary" onclick="showSection('menu-gestor')">Voltar ao Menu</button>
+
     </div>
 
     <div class="ticket-list">
@@ -133,7 +145,7 @@
 <div id="equipes" class="dashboard-section" style="display: none;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
         <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Gestão de Equipes (Técnicos)</h3>
-        <button class="btn btn-secondary" onclick="showSection('menu-gestor')">Voltar ao Menu</button>
+
     </div>
 
     <div style="background: var(--bg-card); backdrop-filter: var(--glass-blur); border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; padding: 1rem;">
@@ -179,28 +191,84 @@
     </div>
 </div>
 
-<!-- Modal Acionar Equipe -->
-<div id="modal-acionamento" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModalAcionamento()">&times;</span>
-        <h3>Acionar Equipe Técnica</h3>
-        <p id="acionamento-info"></p>
-        
-        <form id="form-acionamento" class="modern-form" style="padding: 1rem; margin-top: 1rem;">
-            <input type="hidden" id="acionamento-chamado-id">
-            <div class="form-group">
-                <label for="selecao-lider">Selecione o Líder da Equipe (responsável por iniciar):</label>
+<!-- Modal de Detalhes do Chamado -->
+<div id="modal-detalhes" class="modal" style="z-index: 1100;">
+    <div class="modal-content" style="max-width: 680px; width: 95%;">
+        <span class="close" onclick="closeModalDetalhes()">&times;</span>
+        <h3 style="margin-bottom: 1.5rem; font-size: 1.4rem; color: var(--text-main); display:flex; align-items:center; gap:10px;">
+            <span>🔍</span> Detalhes do Chamado
+        </h3>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem;">
+                <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Nº do Chamado</p>
+                <p id="det-id" style="font-weight: 700; font-size: 1.1rem; margin: 0; color: var(--primary-color);"></p>
+            </div>
+            <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem;">
+                <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Prioridade</p>
+                <p id="det-prioridade" style="font-weight: 700; font-size: 1.1rem; margin: 0;"></p>
+            </div>
+            <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem;">
+                <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Setor / Local</p>
+                <p id="det-setor" style="font-weight: 600; font-size: 1rem; margin: 0; color: var(--text-main);"></p>
+            </div>
+            <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem;">
+                <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Categoria</p>
+                <p id="det-categoria" style="font-weight: 600; font-size: 1rem; margin: 0; color: var(--text-main);"></p>
+            </div>
+            <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem;">
+                <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Solicitante</p>
+                <p id="det-usuario" style="font-weight: 600; font-size: 1rem; margin: 0; color: var(--text-main);"></p>
+            </div>
+            <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem;">
+                <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Data de Abertura</p>
+                <p id="det-abertura" style="font-weight: 600; font-size: 1rem; margin: 0; color: var(--text-main);"></p>
+            </div>
+        </div>
+
+        <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+            <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.05em;">Problema Relatado</p>
+            <p id="det-problema" style="font-weight: 500; font-size: 1rem; margin: 0; color: var(--text-main);"></p>
+        </div>
+
+        <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+            <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.05em;">Mais Detalhes</p>
+            <p id="det-detalhes" style="font-weight: 400; font-size: 0.95rem; margin: 0; color: var(--text-main); white-space: pre-wrap;"></p>
+        </div>
+
+        <div id="det-imagem-box" style="margin-bottom: 1.5rem; display:none;">
+            <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.05em;">Imagem Anexa</p>
+            <img id="det-imagem" src="" alt="Imagem do chamado" style="max-width: 100%; border-radius: 10px; border: 1px solid var(--border-color);">
+        </div>
+
+        <div id="det-previsao" style="background: rgba(5,150,105,0.08); border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 1.5rem; display:flex; align-items:center; gap:10px;">
+            <span style="font-size: 1.3rem;">⏱️</span>
+            <span style="color: var(--text-muted); font-size: 0.9rem;">Previsão de resolução (ML):</span>
+            <strong id="det-tempo" style="color: var(--secondary-color);"></strong>
+        </div>
+
+        <hr style="border-color: var(--border-color); margin-bottom: 1.5rem;">
+
+        <!-- Botão Acionar Equipe Técnica (dentro do modal de detalhes) -->
+        <div style="background: rgba(220,38,38,0.06); border-radius: 12px; padding: 1.25rem; border: 1px solid rgba(220,38,38,0.15);">
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0 0 1rem;">👷 Selecione o líder da equipe técnica responsável por este chamado:</p>
+            <div class="form-group" style="margin-bottom: 1rem;">
                 <select id="selecao-lider" class="input-field" required>
                     {% for tec in tecnicos %}
-                    <option value="{{ tec.id }}" data-equipe="{{ tec.equipe }}">{{ tec.nome }} ({{ tec.equipe }})</option>
+                    <option value="{{ tec.id }}" data-equipe="{{ tec.equipe }}">{{ tec.nome }} ({{ tec.equipe or 'Sem equipe' }})</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="form-actions">
-                <button type="button" class="btn btn-primary" onclick="confirmarAcionamento()">Atribuir Chamado</button>
-                <button type="button" class="btn btn-secondary" onclick="closeModalAcionamento()">Cancelar</button>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-primary" style="flex: 1; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="confirmarAcionamento()">
+                    <span>⚡</span> Acionar Equipe Técnica
+                </button>
+                <button class="btn btn-secondary" onclick="closeModalDetalhes()">Cancelar</button>
             </div>
-        </form>
+        </div>
+
+        <input type="hidden" id="acionamento-chamado-id">
+        <input type="hidden" id="acionamento-categoria">
     </div>
 </div>
 
@@ -225,37 +293,64 @@
         });
     }
 
-    function abrirModalAcionamento(chamadoId, categoria) {
-        document.getElementById('acionamento-chamado-id').value = chamadoId;
-        document.getElementById('acionamento-info').innerText = `Atribuindo chamado #${chamadoId} para Categoria: ${categoria}`;
-        
+    function abrirModalDetalhes(card) {
+        const id        = card.dataset.id;
+        const categoria = card.dataset.categoria;
+        const problema  = card.dataset.problema;
+        const prioridade= card.dataset.prioridade;
+        const setor     = card.dataset.setor;
+        const detalhes  = card.dataset.detalhes;
+        const usuario   = card.dataset.usuario;
+        const tempo     = card.dataset.tempo;
+        const abertura  = card.dataset.abertura;
+
+        // Preencher campos
+        document.getElementById('det-id').textContent        = '#' + id;
+        document.getElementById('det-categoria').textContent = categoria;
+        document.getElementById('det-problema').textContent  = problema;
+        document.getElementById('det-setor').textContent     = setor;
+        document.getElementById('det-detalhes').textContent  = detalhes;
+        document.getElementById('det-usuario').textContent   = usuario;
+        document.getElementById('det-tempo').textContent     = tempo ? tempo + ' h' : 'N/A';
+        document.getElementById('det-abertura').textContent  = abertura;
+
+        // Prioridade com cor
+        const prioEl = document.getElementById('det-prioridade');
+        prioEl.textContent = prioridade;
+        prioEl.style.color = prioridade === 'ALTA' ? '#dc2626' : prioridade === 'MÉDIA' ? '#d97706' : '#059669';
+
+        // Imagem (sistema não possui campo imagem ainda, oculta o bloco)
+        document.getElementById('det-imagem-box').style.display = 'none';
+
+        // Filtrar técnicos por categoria
         const selectLider = document.getElementById('selecao-lider');
         let equipeAlvo = '';
-        if(categoria.includes('ELÉTRICA')) equipeAlvo = 'ELÉTRICA';
-        if(categoria.includes('HIDRÁULICA')) equipeAlvo = 'HIDRÁULICA';
-        if(categoria.includes('ESTRUTURAL')) equipeAlvo = 'ESTRUTURAL';
-        if(categoria.includes('CLIMATIZAÇÃO')) equipeAlvo = 'CLIMATIZAÇÃO';
-        if(categoria.includes('SERVIÇOS GERAIS')) equipeAlvo = 'SERVIÇOS GERAIS';
+        if(categoria.includes('ELÉTRICA'))       equipeAlvo = 'ELÉTRICA';
+        if(categoria.includes('HIDRÁULICA'))     equipeAlvo = 'HIDRÁULICA';
+        if(categoria.includes('ESTRUTURAL'))     equipeAlvo = 'ESTRUTURAL';
+        if(categoria.includes('CLIMATIZAÇÃO'))   equipeAlvo = 'CLIMATIZAÇÃO';
+        if(categoria.includes('SERVIÇOS GERAIS'))equipeAlvo = 'SERVIÇOS GERAIS';
 
         Array.from(selectLider.options).forEach(opt => {
-            if(opt.dataset.equipe === equipeAlvo) {
-                opt.style.display = 'block';
-            } else {
-                opt.style.display = 'none';
-            }
+            opt.style.display = (!equipeAlvo || opt.dataset.equipe === equipeAlvo) ? '' : 'none';
         });
 
-        document.getElementById('modal-acionamento').style.display = 'block';
+        // Guardar dados para acionamento
+        document.getElementById('acionamento-chamado-id').value = id;
+        document.getElementById('acionamento-categoria').value  = categoria;
+
+        document.getElementById('modal-detalhes').style.display = 'flex';
     }
 
-    function closeModalAcionamento() {
-        document.getElementById('modal-acionamento').style.display = 'none';
+    function closeModalDetalhes() {
+        document.getElementById('modal-detalhes').style.display = 'none';
     }
 
     function confirmarAcionamento() {
-        const chamadoId = document.getElementById('acionamento-chamado-id').value;
-        const liderId = document.getElementById('selecao-lider').value;
-        const equipeNome = document.getElementById('selecao-lider').options[document.getElementById('selecao-lider').selectedIndex].dataset.equipe;
+        const chamadoId  = document.getElementById('acionamento-chamado-id').value;
+        const selectEl   = document.getElementById('selecao-lider');
+        const liderId    = selectEl.value;
+        const equipeNome = selectEl.options[selectEl.selectedIndex].dataset.equipe;
 
         if(!liderId) {
             alert('Selecione um líder válido para a equipe.');
@@ -275,6 +370,12 @@
             window.location.reload();
         });
     }
+
+    // Fechar modal clicando fora
+    window.addEventListener('click', function(e) {
+        const modalDet = document.getElementById('modal-detalhes');
+        if (e.target === modalDet) closeModalDetalhes();
+    });
 
     // Chart.js init
     document.addEventListener('DOMContentLoaded', function() {
