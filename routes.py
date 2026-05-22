@@ -89,9 +89,34 @@ def user_dashboard():
 def tech_dashboard():
     if current_user.perfil != 'Tecnico' and current_user.perfil != 'Admin':
         return redirect(url_for('main.index'))
-    chamados_atribuidos = Chamado.query.filter_by(equipe_responsavel=current_user.equipe, status='EQUIPE TÉCNICA ACIONADA').all()
-    chamados_atendimento = Chamado.query.filter_by(equipe_responsavel=current_user.equipe, status='ATENDIMENTO INICIADO').all()
-    chamados_concluidos = Chamado.query.filter_by(equipe_responsavel=current_user.equipe, status='CONCLUÍDO').all()
+        
+    categoria_map = {
+        'ELÉTRICA': 'MANUTENÇÃO ELÉTRICA',
+        'HIDRÁULICA': 'MANUTENÇÃO HIDRÁULICA',
+        'ESTRUTURAL': 'MANUTENÇÃO ESTRUTURAL/CIVIL',
+        'CLIMATIZAÇÃO': 'CLIMATIZAÇÃO',
+        'SERVIÇOS GERAIS': 'SERVIÇOS GERAIS'
+    }
+    
+    query_atribuidos = Chamado.query.filter_by(status='EQUIPE TÉCNICA ACIONADA')
+    query_atendimento = Chamado.query.filter_by(status='ATENDIMENTO INICIADO')
+    query_concluidos = Chamado.query.filter_by(status='CONCLUÍDO')
+    
+    if current_user.perfil == 'Tecnico' and current_user.equipe:
+        cat_alvo = categoria_map.get(current_user.equipe)
+        if cat_alvo:
+            query_atribuidos = query_atribuidos.filter_by(categoria=cat_alvo)
+            query_atendimento = query_atendimento.filter_by(categoria=cat_alvo)
+            query_concluidos = query_concluidos.filter_by(categoria=cat_alvo)
+        else:
+            query_atribuidos = query_atribuidos.filter_by(equipe_responsavel=current_user.equipe)
+            query_atendimento = query_atendimento.filter_by(equipe_responsavel=current_user.equipe)
+            query_concluidos = query_concluidos.filter_by(equipe_responsavel=current_user.equipe)
+            
+    chamados_atribuidos = query_atribuidos.all()
+    chamados_atendimento = query_atendimento.all()
+    chamados_concluidos = query_concluidos.all()
+    
     return render_template('tech_dashboard.html', 
                            atribuidos=chamados_atribuidos, 
                            em_atendimento=chamados_atendimento,
@@ -220,12 +245,48 @@ def api_chamado_detail(id):
         return jsonify({'message': 'Atualizado'})
 
 @bp.route('/api/dashboard/metricas', methods=['GET'])
+@login_required
 def api_metricas():
-    # Retorna agregações para gráficos
-    abertos = Chamado.query.filter_by(status='ABERTO').count()
-    em_atendimento = Chamado.query.filter_by(status='ATENDIMENTO INICIADO').count()
-    concluidos = Chamado.query.filter_by(status='CONCLUÍDO').count()
-    return jsonify({'abertos': abertos, 'em_atendimento': em_atendimento, 'concluidos': concluidos})
+    categoria_map = {
+        'ELÉTRICA': 'MANUTENÇÃO ELÉTRICA',
+        'HIDRÁULICA': 'MANUTENÇÃO HIDRÁULICA',
+        'ESTRUTURAL': 'MANUTENÇÃO ESTRUTURAL/CIVIL',
+        'CLIMATIZAÇÃO': 'CLIMATIZAÇÃO',
+        'SERVIÇOS GERAIS': 'SERVIÇOS GERAIS'
+    }
+
+    if current_user.perfil == 'Tecnico' and current_user.equipe:
+        cat_alvo = categoria_map.get(current_user.equipe)
+        if cat_alvo:
+            atribuidos = Chamado.query.filter_by(status='EQUIPE TÉCNICA ACIONADA', categoria=cat_alvo).count()
+            em_atendimento = Chamado.query.filter_by(status='ATENDIMENTO INICIADO', categoria=cat_alvo).count()
+            concluidos = Chamado.query.filter_by(status='CONCLUÍDO', categoria=cat_alvo).count()
+            
+            alta = Chamado.query.filter_by(prioridade='ALTA', categoria=cat_alvo).count()
+            media = Chamado.query.filter_by(prioridade='MÉDIA', categoria=cat_alvo).count()
+            baixa = Chamado.query.filter_by(prioridade='BAIXA', categoria=cat_alvo).count()
+        else:
+            atribuidos = Chamado.query.filter_by(status='EQUIPE TÉCNICA ACIONADA', equipe_responsavel=current_user.equipe).count()
+            em_atendimento = Chamado.query.filter_by(status='ATENDIMENTO INICIADO', equipe_responsavel=current_user.equipe).count()
+            concluidos = Chamado.query.filter_by(status='CONCLUÍDO', equipe_responsavel=current_user.equipe).count()
+            
+            alta = Chamado.query.filter_by(prioridade='ALTA', equipe_responsavel=current_user.equipe).count()
+            media = Chamado.query.filter_by(prioridade='MÉDIA', equipe_responsavel=current_user.equipe).count()
+            baixa = Chamado.query.filter_by(prioridade='BAIXA', equipe_responsavel=current_user.equipe).count()
+
+        return jsonify({
+            'atribuidos': atribuidos,
+            'em_atendimento': em_atendimento,
+            'concluidos': concluidos,
+            'alta': alta,
+            'media': media,
+            'baixa': baixa
+        })
+    else:
+        abertos = Chamado.query.filter_by(status='ABERTO').count()
+        em_atendimento = Chamado.query.filter_by(status='ATENDIMENTO INICIADO').count()
+        concluidos = Chamado.query.filter_by(status='CONCLUÍDO').count()
+        return jsonify({'abertos': abertos, 'em_atendimento': em_atendimento, 'concluidos': concluidos})
 
 @bp.route('/api/dashboard/previsao', methods=['POST'])
 def api_previsao():

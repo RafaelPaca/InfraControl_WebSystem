@@ -6,24 +6,38 @@
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-header">
-    <h2>Bem-vindo, Técnico {{ current_user.nome }} (Equipe: {{ current_user.equipe }})</h2>
-    <div class="dashboard-actions">
-        <button class="btn btn-primary" onclick="showSection('dash-graficos')">Visão Geral</button>
-        <button class="btn btn-secondary" onclick="showSection('atribuidos')">Atribuídos</button>
-        <button class="btn btn-secondary" onclick="showSection('em-atendimento')">Em Atendimento</button>
-        <button class="btn btn-secondary" onclick="showSection('concluidos')">Concluídos</button>
+
+<!-- MENU PRINCIPAL DO TÉCNICO -->
+<div id="menu-tecnico" class="dashboard-section" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center;">
+    <h2 style="font-size: 2.2rem; margin-bottom: 0.5rem; color: var(--text-main); font-weight: 700;">Bem-vindo, {{ current_user.nome }}</h2>
+    <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2.5rem; max-width: 500px; line-height: 1.6;">Equipe: <strong>{{ current_user.equipe }}</strong> | Função: <strong>{{ current_user.funcao }}</strong></p>
+    <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+        <button class="btn btn-primary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);" onclick="showSection('dash-graficos')">
+            <span>📊</span> Painel de Análise
+        </button>
+        <button class="btn btn-secondary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);" onclick="showSection('atribuidos')">
+            <span>🔴</span> Chamados Atribuídos
+        </button>
+        <button class="btn btn-secondary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);" onclick="showSection('em-atendimento')">
+            <span>🟡</span> Em Atendimento
+        </button>
+        <button class="btn btn-secondary" style="padding: 1.25rem 2.5rem; font-size: 1.15rem; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);" onclick="showSection('concluidos')">
+            <span>🟢</span> Concluídos
+        </button>
     </div>
 </div>
 
-<!-- GRÁFICOS -->
-<div id="dash-graficos" class="dashboard-section">
-    <h3>Dashboard da Equipe {{ current_user.equipe }}</h3>
-    <div class="form-row" style="margin-top: 2rem;">
-        <div class="form-group" style="background: var(--bg-card); padding: 1rem; border-radius: 8px;">
+<!-- GRÁFICOS (PAINEL DE ANÁLISE) -->
+<div id="dash-graficos" class="dashboard-section" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+        <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Dashboard da Equipe {{ current_user.equipe }}</h3>
+    </div>
+    
+    <div class="form-row" style="margin-top: 2rem; justify-content: center; flex-wrap: wrap;">
+        <div class="form-group" style="background: rgba(255, 255, 255, 0.55); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); max-width: 450px; width: 100%; margin: 10px;">
             <canvas id="chartStatus"></canvas>
         </div>
-        <div class="form-group" style="background: var(--bg-card); padding: 1rem; border-radius: 8px;">
+        <div class="form-group" style="background: rgba(255, 255, 255, 0.55); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); max-width: 450px; width: 100%; margin: 10px;">
             <canvas id="chartPrioridade"></canvas>
         </div>
     </div>
@@ -31,38 +45,64 @@
 
 <!-- ATRIBUÍDOS -->
 <div id="atribuidos" class="dashboard-section" style="display: none;">
-    <h3>Chamados Atribuídos</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+        <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Chamados Atribuídos</h3>
+    </div>
+
     <div class="ticket-list">
         {% for chamado in atribuidos %}
-        <div class="ticket-card">
+        <div class="ticket-card"
+             data-id="{{ chamado.id }}"
+             data-categoria="{{ chamado.categoria }}"
+             data-problema="{{ chamado.problema }}"
+             data-prioridade="{{ chamado.prioridade }}"
+             data-setor="{{ chamado.setor_local.nome if chamado.setor_local else 'N/A' }}"
+             data-detalhes="{{ chamado.detalhes or 'Sem detalhes adicionais.' }}"
+             data-usuario="{{ chamado.solicitante.nome ~ ' ' ~ chamado.solicitante.sobrenome if chamado.solicitante else 'N/A' }}"
+             data-tempo="{{ chamado.tempo_estimado }}"
+             data-abertura="{{ chamado.data_abertura.strftime('%d/%m/%Y %H:%M') if chamado.data_abertura else '' }}"
+             data-status="{{ chamado.status }}">
             <div class="ticket-header">
                 <h4>Chamado #{{ chamado.id }} - {{ chamado.categoria }}</h4>
                 <span class="badge badge-{{ chamado.prioridade|lower }}">{{ chamado.prioridade }}</span>
             </div>
             <div class="ticket-body">
                 <p><strong>Problema:</strong> {{ chamado.problema }}</p>
-                <p><strong>Local:</strong> {{ chamado.setor_local.nome }}</p>
-                <p><strong>Líder:</strong> {% if chamado.tecnico_lider_id == current_user.id %}Você{% else %}Outro{% endif %}</p>
+                <p><strong>Local:</strong> {{ chamado.setor_local.nome if chamado.setor_local else 'N/A' }}</p>
             </div>
-            <div class="ticket-footer" style="gap: 10px;">
-                <button class="btn btn-info" onclick="visualizarChamado({{ chamado.id }})">Visualizar</button>
-                {% if chamado.tecnico_lider_id == current_user.id %}
-                <button class="btn btn-primary" onclick="atualizarStatus({{ chamado.id }}, 'ATENDIMENTO INICIADO')">Iniciar Atendimento</button>
-                {% endif %}
+            <div class="ticket-footer">
+                <button class="btn btn-secondary" style="display:flex; align-items:center; gap:8px;" onclick="abrirModalDetalhes(this.closest('.ticket-card'))">
+                    <span>🔍</span> Visualizar
+                </button>
             </div>
         </div>
         {% else %}
-        <p>Nenhum chamado atribuído no momento.</p>
+        <div style="background: var(--bg-card); backdrop-filter: var(--glass-blur); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; width: 100%; text-align: center;">
+            <p class="no-data" style="margin: 0;">Nenhum chamado atribuído no momento.</p>
+        </div>
         {% endfor %}
     </div>
 </div>
 
 <!-- EM ATENDIMENTO -->
 <div id="em-atendimento" class="dashboard-section" style="display: none;">
-    <h3>Chamados em Atendimento</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+        <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Chamados em Atendimento</h3>
+    </div>
+
     <div class="ticket-list">
         {% for chamado in em_atendimento %}
-        <div class="ticket-card">
+        <div class="ticket-card"
+             data-id="{{ chamado.id }}"
+             data-categoria="{{ chamado.categoria }}"
+             data-problema="{{ chamado.problema }}"
+             data-prioridade="{{ chamado.prioridade }}"
+             data-setor="{{ chamado.setor_local.nome if chamado.setor_local else 'N/A' }}"
+             data-detalhes="{{ chamado.detalhes or 'Sem detalhes adicionais.' }}"
+             data-usuario="{{ chamado.solicitante.nome ~ ' ' ~ chamado.solicitante.sobrenome if chamado.solicitante else 'N/A' }}"
+             data-tempo="{{ chamado.tempo_estimado }}"
+             data-abertura="{{ chamado.data_abertura.strftime('%d/%m/%Y %H:%M') if chamado.data_abertura else '' }}"
+             data-status="{{ chamado.status }}">
             <div class="ticket-header">
                 <h4>Chamado #{{ chamado.id }} - {{ chamado.categoria }}</h4>
                 <span class="badge badge-{{ chamado.prioridade|lower }}">{{ chamado.prioridade }}</span>
@@ -71,34 +111,41 @@
                 <p><strong>Iniciado em:</strong> {{ chamado.data_inicio.strftime('%d/%m/%Y %H:%M') if chamado.data_inicio else '' }}</p>
                 <p><strong>Problema:</strong> {{ chamado.problema }}</p>
             </div>
-            <div class="ticket-footer" style="gap: 10px;">
-                <button class="btn btn-info" onclick="visualizarChamado({{ chamado.id }})">Visualizar</button>
-                {% if chamado.tecnico_lider_id == current_user.id %}
-                <button class="btn btn-secondary" style="color:var(--secondary-color); border-color:var(--secondary-color);" onclick="atualizarStatus({{ chamado.id }}, 'CONCLUÍDO')">Concluir Chamado</button>
-                {% endif %}
+            <div class="ticket-footer">
+                <button class="btn btn-secondary" style="display:flex; align-items:center; gap:8px;" onclick="abrirModalDetalhes(this.closest('.ticket-card'))">
+                    <span>🔍</span> Visualizar
+                </button>
             </div>
         </div>
         {% else %}
-        <p>Nenhum chamado em atendimento.</p>
+        <div style="background: var(--bg-card); backdrop-filter: var(--glass-blur); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; width: 100%; text-align: center;">
+            <p class="no-data" style="margin: 0;">Nenhum chamado em atendimento.</p>
+        </div>
         {% endfor %}
     </div>
 </div>
 
 <!-- CONCLUÍDOS -->
 <div id="concluidos" class="dashboard-section" style="display: none;">
-    <h3>Chamados Concluídos</h3>
-    <!-- Filtros de data e botão exportar -->
-    <div class="filters" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-        <input type="date" class="input-field" id="data_inicio" title="Data Inicial">
-        <input type="date" class="input-field" id="data_fim" title="Data Final">
-        <button class="btn btn-secondary">Filtrar</button>
-        <button class="btn btn-primary">Exportar PDF</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+        <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Chamados Concluídos</h3>
     </div>
+
     <div class="ticket-list">
         {% for chamado in concluidos %}
-        <div class="ticket-card">
+        <div class="ticket-card"
+             data-id="{{ chamado.id }}"
+             data-categoria="{{ chamado.categoria }}"
+             data-problema="{{ chamado.problema }}"
+             data-prioridade="{{ chamado.prioridade }}"
+             data-setor="{{ chamado.setor_local.nome if chamado.setor_local else 'N/A' }}"
+             data-detalhes="{{ chamado.detalhes or 'Sem detalhes adicionais.' }}"
+             data-usuario="{{ chamado.solicitante.nome ~ ' ' ~ chamado.solicitante.sobrenome if chamado.solicitante else 'N/A' }}"
+             data-tempo="{{ chamado.tempo_estimado }}"
+             data-abertura="{{ chamado.data_abertura.strftime('%d/%m/%Y %H:%M') if chamado.data_abertura else '' }}"
+             data-status="{{ chamado.status }}">
             <div class="ticket-header">
-                <h4>Chamado #{{ chamado.id }}</h4>
+                <h4>Chamado #{{ chamado.id }} - {{ chamado.categoria }}</h4>
                 <span class="badge badge-{{ chamado.prioridade|lower }}">{{ chamado.prioridade }}</span>
             </div>
             <div class="ticket-body">
@@ -106,21 +153,76 @@
                 <p><strong>Problema:</strong> {{ chamado.problema }}</p>
             </div>
             <div class="ticket-footer">
-                <button class="btn btn-info" onclick="visualizarChamado({{ chamado.id }})">Visualizar</button>
+                <button class="btn btn-secondary" style="display:flex; align-items:center; gap:8px;" onclick="abrirModalDetalhes(this.closest('.ticket-card'))">
+                    <span>🔍</span> Visualizar
+                </button>
             </div>
         </div>
         {% else %}
-        <p>Nenhum chamado concluído.</p>
+        <div style="background: var(--bg-card); backdrop-filter: var(--glass-blur); border-radius: 12px; border: 1px solid var(--border-color); padding: 2rem; width: 100%; text-align: center;">
+            <p class="no-data" style="margin: 0;">Nenhum chamado concluído.</p>
+        </div>
         {% endfor %}
     </div>
 </div>
 
-<!-- Reutilizando o modal de visualização (simples por enquanto) -->
-<div id="modal-chamado" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal()">&times;</span>
-        <h3 id="modal-titulo">Detalhes do Chamado</h3>
-        <div id="modal-detalhes-conteudo"></div>
+<!-- MODAL DE DETALHES DO CHAMADO -->
+<div id="modal-detalhes" class="modal" style="z-index: 1100;">
+    <div class="modal-content" style="max-width: 680px; width: 95%; max-height: 90vh; overflow-y: auto;">
+        <span class="close" onclick="closeModalDetalhes()">&times;</span>
+        <h3 style="margin-bottom: 1.5rem; font-size: 1.4rem; color: var(--text-main); display:flex; align-items:center; gap:10px;">
+            <span>🔍</span> Detalhes do Chamado
+        </h3>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem;">
+                <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Nº do Chamado</p>
+                <p id="det-id" style="font-weight: 700; font-size: 1.1rem; margin: 0; color: var(--primary-color);"></p>
+            </div>
+            <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem;">
+                <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Prioridade</p>
+                <p id="det-prioridade" style="font-weight: 700; font-size: 1.1rem; margin: 0;"></p>
+            </div>
+            <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem;">
+                <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Setor / Local</p>
+                <p id="det-setor" style="font-weight: 600; font-size: 1rem; margin: 0; color: var(--text-main);"></p>
+            </div>
+            <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem;">
+                <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Categoria</p>
+                <p id="det-categoria" style="font-weight: 600; font-size: 1rem; margin: 0; color: var(--text-main);"></p>
+            </div>
+            <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem;">
+                <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Solicitante</p>
+                <p id="det-usuario" style="font-weight: 600; font-size: 1rem; margin: 0; color: var(--text-main);"></p>
+            </div>
+            <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem;">
+                <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Data de Abertura</p>
+                <p id="det-abertura" style="font-weight: 600; font-size: 1rem; margin: 0; color: var(--text-main);"></p>
+            </div>
+        </div>
+
+        <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+            <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.05em;">Problema Relatado</p>
+            <p id="det-problema" style="font-weight: 500; font-size: 1rem; margin: 0; color: var(--text-main);"></p>
+        </div>
+
+        <div style="background: rgba(37,99,235,0.07); border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+            <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.05em;">Mais Detalhes</p>
+            <p id="det-detalhes" style="font-weight: 400; font-size: 0.95rem; margin: 0; color: var(--text-main); white-space: pre-wrap;"></p>
+        </div>
+
+        <div id="det-previsao" style="background: rgba(5,150,105,0.08); border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 1.5rem; display:flex; align-items:center; gap:10px;">
+            <span style="font-size: 1.3rem;">⏱️</span>
+            <span style="color: var(--text-muted); font-size: 0.9rem;">Previsão de resolução (ML):</span>
+            <strong id="det-tempo" style="color: var(--secondary-color);"></strong>
+        </div>
+
+        <hr style="border-color: var(--border-color); margin-bottom: 1.5rem;">
+
+        <!-- Botões de Ação do Técnico -->
+        <div id="modal-actions" style="display: flex; gap: 1rem;">
+            <!-- Renderizado dinamicamente pelo JavaScript -->
+        </div>
     </div>
 </div>
 
@@ -146,40 +248,93 @@
         });
     }
 
-    function visualizarChamado(id) {
-        fetch(`/api/chamados/${id}`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('modal-titulo').innerText = `Chamado #${data.id}`;
-                document.getElementById('modal-detalhes-conteudo').innerHTML = `<p>Status Atual: ${data.status}</p><p>Categoria: ${data.categoria}</p>`;
-                document.getElementById('modal-chamado').style.display = 'block';
-            });
+    function abrirModalDetalhes(card) {
+        const id        = card.dataset.id;
+        const categoria = card.dataset.categoria;
+        const problema  = card.dataset.problema;
+        const prioridade= card.dataset.prioridade;
+        const setor     = card.dataset.setor;
+        const detalhes  = card.dataset.detalhes;
+        const usuario   = card.dataset.usuario;
+        const tempo     = card.dataset.tempo;
+        const abertura  = card.dataset.abertura;
+        const status    = card.dataset.status;
+
+        // Preencher campos
+        document.getElementById('det-id').textContent        = '#' + id;
+        document.getElementById('det-categoria').textContent = categoria;
+        document.getElementById('det-problema').textContent  = problema;
+        document.getElementById('det-setor').textContent     = setor;
+        document.getElementById('det-detalhes').textContent  = detalhes;
+        document.getElementById('det-usuario').textContent   = usuario;
+        document.getElementById('det-tempo').textContent     = tempo ? tempo + ' h' : 'N/A';
+        document.getElementById('det-abertura').textContent  = abertura;
+
+        // Prioridade com cor
+        const prioEl = document.getElementById('det-prioridade');
+        prioEl.textContent = prioridade;
+        prioEl.style.color = prioridade === 'ALTA' ? '#dc2626' : prioridade === 'MÉDIA' ? '#d97706' : '#059669';
+
+        // Renderizar botões de ação dinamicamente
+        const actionsContainer = document.getElementById('modal-actions');
+        actionsContainer.innerHTML = ''; // Limpar anterior
+
+        if (status === 'EQUIPE TÉCNICA ACIONADA') {
+            actionsContainer.innerHTML = `
+                <button class="btn btn-primary" style="flex: 1;" onclick="atualizarStatus(${id}, 'ATENDIMENTO INICIADO')">Iniciar Atendimento</button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModalDetalhes()">Fechar</button>
+            `;
+        } else if (status === 'ATENDIMENTO INICIADO') {
+            actionsContainer.innerHTML = `
+                <button class="btn btn-secondary" style="flex: 1; color: var(--secondary-color); border-color: var(--secondary-color);" onclick="atualizarStatus(${id}, 'CONCLUÍDO')">Concluir Chamado</button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModalDetalhes()">Fechar</button>
+            `;
+        } else {
+            // Concluído ou qualquer outro
+            actionsContainer.innerHTML = `
+                <button class="btn btn-secondary" style="width: 100%;" onclick="closeModalDetalhes()">Fechar</button>
+            `;
+        }
+
+        document.getElementById('modal-detalhes').style.display = 'flex';
     }
 
-    function closeModal() {
-        document.getElementById('modal-chamado').style.display = 'none';
+    function closeModalDetalhes() {
+        document.getElementById('modal-detalhes').style.display = 'none';
     }
+
+    // Fechar modal clicando fora
+    window.addEventListener('click', function(e) {
+        const modalDet = document.getElementById('modal-detalhes');
+        if (e.target === modalDet) closeModalDetalhes();
+    });
 
     // Chart.js init
     document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/dashboard/metricas')
             .then(res => res.json())
             .then(data => {
+                // Gráfico 1: Chamados por Status (Atribuídos, Em Atendimento, Concluídos)
                 const ctxStatus = document.getElementById('chartStatus').getContext('2d');
                 new Chart(ctxStatus, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Em Atendimento', 'Concluídos'],
+                        labels: ['Atribuídos', 'Em Atendimento', 'Concluídos'],
                         datasets: [{
-                            data: [data.em_atendimento, data.concluidos],
-                            backgroundColor: ['#f59e0b', '#10b981'],
-                            borderColor: '#1e293b'
+                            data: [data.atribuidos || 0, data.em_atendimento || 0, data.concluidos || 0],
+                            backgroundColor: ['#dc2626', '#d97706', '#059669'],
+                            borderColor: '#ffffff'
                         }]
                     },
-                    options: { plugins: { title: { display: true, text: 'Status dos Chamados (Equipe)', color: '#fff' }, legend: { labels: { color: '#fff' } } } }
+                    options: { 
+                        plugins: { 
+                            title: { display: true, text: 'Status dos Chamados (Equipe)', color: '#1e293b' }, 
+                            legend: { labels: { color: '#1e293b' } } 
+                        } 
+                    }
                 });
 
-                // Mock data for priority chart since API metrics is simple
+                // Gráfico 2: Chamados por Prioridade (Alta, Média, Baixa)
                 const ctxPrio = document.getElementById('chartPrioridade').getContext('2d');
                 new Chart(ctxPrio, {
                     type: 'bar',
@@ -187,11 +342,20 @@
                         labels: ['Alta', 'Média', 'Baixa'],
                         datasets: [{
                             label: 'Quantidade',
-                            data: [2, 5, 3], // mock
-                            backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6']
+                            data: [data.alta || 0, data.media || 0, data.baixa || 0],
+                            backgroundColor: ['#dc2626', '#d97706', '#2563eb']
                         }]
                     },
-                    options: { plugins: { title: { display: true, text: 'Prioridades', color: '#fff' }, legend: { labels: { color: '#fff' } } }, scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } }
+                    options: { 
+                        plugins: { 
+                            title: { display: true, text: 'Prioridade dos Chamados (Equipe)', color: '#1e293b' }, 
+                            legend: { labels: { color: '#1e293b' } } 
+                        }, 
+                        scales: { 
+                            y: { ticks: { color: '#475569' } }, 
+                            x: { ticks: { color: '#475569' } } 
+                        } 
+                    }
                 });
             });
     });
