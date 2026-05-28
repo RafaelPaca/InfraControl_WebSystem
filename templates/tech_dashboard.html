@@ -374,7 +374,13 @@
                             legend: { labels: { color: '#1e293b' } } 
                         }, 
                         scales: { 
-                            y: { ticks: { color: '#475569' } }, 
+                            y: { 
+                                beginAtZero: true,
+                                ticks: { 
+                                    color: '#475569',
+                                    stepSize: 5
+                                } 
+                            }, 
                             x: { ticks: { color: '#475569' } } 
                         } 
                     }
