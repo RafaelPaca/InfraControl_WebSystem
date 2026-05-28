@@ -569,7 +569,27 @@
                             backgroundColor: '#2563eb'
                         }]
                     },
-                    options: { plugins: { title: { display: true, text: 'Por Categoria', color: '#1e293b' }, legend: { labels: { color: '#1e293b' } } }, scales: { y: { ticks: { color: '#475569' } }, x: { ticks: { color: '#475569' } } } }
+                    options: { 
+                        plugins: { 
+                            title: { display: true, text: 'Por Categoria', color: '#1e293b' }, 
+                            legend: { labels: { color: '#1e293b' } } 
+                        }, 
+                        scales: { 
+                            y: { 
+                                beginAtZero: true,
+                                ticks: { 
+                                    color: '#475569',
+                                    stepSize: 2,
+                                    callback: function(value) {
+                                        if (value % 1 === 0) {
+                                            return value;
+                                        }
+                                    }
+                                } 
+                            }, 
+                            x: { ticks: { color: '#475569' } } 
+                        } 
+                    }
                 });
             });
     });
