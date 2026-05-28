@@ -378,7 +378,12 @@
                                 beginAtZero: true,
                                 ticks: { 
                                     color: '#475569',
-                                    stepSize: 5
+                                    stepSize: 2,
+                                    callback: function(value) {
+                                        if (value % 1 === 0) {
+                                            return value;
+                                        }
+                                    }
                                 } 
                             }, 
                             x: { ticks: { color: '#475569' } } 
