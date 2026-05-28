@@ -83,11 +83,6 @@
             <textarea id="detalhes" name="detalhes" maxlength="500" class="input-field"></textarea>
         </div>
 
-        <div class="form-group">
-            <label for="imagens">Upload de Imagem (Até 3 arquivos):</label>
-            <input type="file" id="imagens" name="imagens" accept="image/*" multiple class="input-field">
-        </div>
-
         <div class="form-actions">
             <button type="submit" class="btn btn-primary" id="btn-abrir-chamado">Abrir Chamado</button>
             <button type="button" class="btn btn-secondary" onclick="showSection('menu-principal')">Voltar ao Menu</button>
@@ -134,18 +129,20 @@
 </div>
 
 <!-- Modal Visualizar Chamado -->
-<div id="modal-chamado" class="modal">
-    <div class="modal-content">
+<div id="modal-chamado" class="modal" style="z-index: 1100;">
+    <div class="modal-content" style="max-width: 680px; width: 95%; max-height: 90vh; overflow-y: auto;">
         <span class="close" onclick="closeModal()">&times;</span>
-        <h3 id="modal-titulo">Detalhes do Chamado</h3>
+        <h3 id="modal-titulo" style="margin-bottom: 1.25rem; font-size: 1.4rem; color: var(--text-main); display:flex; align-items:center; gap:10px;">
+            <span>🔍</span> Detalhes do Chamado
+        </h3>
         <div id="modal-body">
-            <!-- Timeline será inserida via JS -->
-            <div class="timeline-container" id="timeline-container"></div>
+            <!-- Timeline fica acima das informações -->
+            <div class="timeline-container" id="timeline-container" style="margin-bottom: 1.5rem;"></div>
             <div id="modal-detalhes-conteudo"></div>
-            <div id="modal-tempo-estimado" class="ml-prediction"></div>
+            <div id="modal-tempo-estimado"></div>
         </div>
-        <div class="modal-actions" id="modal-actions">
-            <!-- Botão de excluir aparecerá aqui se status = Aberto -->
+        <div class="modal-actions" id="modal-actions" style="margin-top: 1.25rem; display: flex; gap: 1rem;">
+            <!-- Botões de ação aparecem aqui via JS -->
         </div>
     </div>
 </div>

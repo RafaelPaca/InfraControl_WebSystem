@@ -73,7 +73,7 @@
             <div class="ticket-body">
                 <p><strong>Problema:</strong> {{ chamado.problema }}</p>
                 <p><strong>Setor:</strong> {{ chamado.setor_local.nome if chamado.setor_local else 'N/A' }}</p>
-                <p><strong>Previsão (ML):</strong> {{ chamado.tempo_estimado }} h</p>
+                <p><strong>Previsão (ML):</strong> {{ chamado.tempo_estimado | formatar_tempo }}</p>
             </div>
             <div class="ticket-footer">
                 <button class="btn btn-secondary" style="display:flex; align-items:center; gap:8px;" onclick="abrirModalDetalhes(this.closest('.ticket-card'))">
@@ -98,13 +98,31 @@
 
     <div class="ticket-list">
         {% for chamado in em_atendimento %}
-        <div class="ticket-card">
+        <div class="ticket-card"
+             data-id="{{ chamado.id }}"
+             data-categoria="{{ chamado.categoria }}"
+             data-problema="{{ chamado.problema }}"
+             data-prioridade="{{ chamado.prioridade }}"
+             data-setor="{{ chamado.setor_local.nome if chamado.setor_local else 'N/A' }}"
+             data-detalhes="{{ chamado.detalhes or 'Sem detalhes adicionais.' }}"
+             data-usuario="{{ chamado.solicitante.nome ~ ' ' ~ chamado.solicitante.sobrenome if chamado.solicitante else 'N/A' }}"
+             data-tempo="{{ chamado.tempo_estimado }}"
+             data-abertura="{{ chamado.data_abertura.strftime('%d/%m/%Y %H:%M') if chamado.data_abertura else '' }}"
+             data-inicio="{{ chamado.data_inicio.strftime('%d/%m/%Y %H:%M') if chamado.data_inicio else '' }}"
+             data-equipe="{{ chamado.equipe_responsavel or 'N/A' }}"
+             data-status="{{ chamado.status }}">
             <div class="ticket-header">
                 <h4>Chamado #{{ chamado.id }} - {{ chamado.categoria }}</h4>
                 <span class="badge badge-{{ chamado.prioridade|lower }}">{{ chamado.prioridade }}</span>
             </div>
             <div class="ticket-body">
                 <p><strong>Equipe:</strong> {{ chamado.equipe_responsavel }}</p>
+                <p><strong>Iniciado em:</strong> {{ chamado.data_inicio.strftime('%d/%m/%Y %H:%M') if chamado.data_inicio else '' }}</p>
+            </div>
+            <div class="ticket-footer">
+                <button class="btn btn-secondary" style="display:flex; align-items:center; gap:8px;" onclick="abrirModalDetalhes(this.closest('.ticket-card'))">
+                    <span>🔍</span> Visualizar
+                </button>
             </div>
         </div>
         {% else %}
@@ -124,13 +142,32 @@
 
     <div class="ticket-list">
         {% for chamado in concluidos %}
-        <div class="ticket-card">
+        <div class="ticket-card"
+             data-id="{{ chamado.id }}"
+             data-categoria="{{ chamado.categoria }}"
+             data-problema="{{ chamado.problema }}"
+             data-prioridade="{{ chamado.prioridade }}"
+             data-setor="{{ chamado.setor_local.nome if chamado.setor_local else 'N/A' }}"
+             data-detalhes="{{ chamado.detalhes or 'Sem detalhes adicionais.' }}"
+             data-usuario="{{ chamado.solicitante.nome ~ ' ' ~ chamado.solicitante.sobrenome if chamado.solicitante else 'N/A' }}"
+             data-tempo="{{ chamado.tempo_estimado }}"
+             data-abertura="{{ chamado.data_abertura.strftime('%d/%m/%Y %H:%M') if chamado.data_abertura else '' }}"
+             data-inicio="{{ chamado.data_inicio.strftime('%d/%m/%Y %H:%M') if chamado.data_inicio else '' }}"
+             data-conclusao="{{ chamado.data_conclusao.strftime('%d/%m/%Y %H:%M') if chamado.data_conclusao else '' }}"
+             data-equipe="{{ chamado.equipe_responsavel or 'N/A' }}"
+             data-status="{{ chamado.status }}">
             <div class="ticket-header">
                 <h4>Chamado #{{ chamado.id }} - {{ chamado.categoria }}</h4>
                 <span class="badge badge-{{ chamado.prioridade|lower }}">{{ chamado.prioridade }}</span>
             </div>
             <div class="ticket-body">
+                <p><strong>Problema:</strong> {{ chamado.problema }}</p>
                 <p><strong>Concluído em:</strong> {{ chamado.data_conclusao.strftime('%d/%m/%Y %H:%M') if chamado.data_conclusao else '' }}</p>
+            </div>
+            <div class="ticket-footer">
+                <button class="btn btn-secondary" style="display:flex; align-items:center; gap:8px;" onclick="abrirModalDetalhes(this.closest('.ticket-card'))">
+                    <span>🔍</span> Visualizar
+                </button>
             </div>
         </div>
         {% else %}
@@ -193,7 +230,7 @@
 
 <!-- Modal de Detalhes do Chamado -->
 <div id="modal-detalhes" class="modal" style="z-index: 1100;">
-    <div class="modal-content" style="max-width: 680px; width: 95%; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-content" style="max-width: 680px; width: 95%; max-height: 95vh; overflow-y: auto;">
         <span class="close" onclick="closeModalDetalhes()">&times;</span>
         <h3 style="margin-bottom: 1.5rem; font-size: 1.4rem; color: var(--text-main); display:flex; align-items:center; gap:10px;">
             <span>🔍</span> Detalhes do Chamado
@@ -247,10 +284,42 @@
             <strong id="det-tempo" style="color: var(--secondary-color);"></strong>
         </div>
 
+        <!-- Dados do Atendimento (exibido apenas se em atendimento ou concluído) -->
+        <div id="det-atendimento-box" style="display: none; background: rgba(245, 158, 11, 0.08); border-radius: 12px; padding: 1.25rem; border: 1px solid rgba(245, 158, 11, 0.2); margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.75rem; font-size: 1.05rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                <span>🟡</span> Dados do Atendimento
+            </h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Início do Atendimento</p>
+                    <p id="det-data-inicio" style="font-weight: 600; font-size: 0.95rem; margin: 0; color: var(--text-main);"></p>
+                </div>
+                <div>
+                    <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Equipe Responsável</p>
+                    <p id="det-equipe-responsavel" style="font-weight: 600; font-size: 0.95rem; margin: 0; color: var(--text-main);"></p>
+                </div>
+            </div>
+            <div style="margin-top: 1rem;">
+                <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Técnicos Atuando</p>
+                <p id="det-tecnicos-atuando" style="font-weight: 500; font-size: 0.95rem; margin: 0; color: var(--text-main); line-height: 1.4;"></p>
+            </div>
+        </div>
+
+        <!-- Dados da Conclusão (exibido apenas se concluído) -->
+        <div id="det-conclusao-box" style="display: none; background: rgba(16, 185, 129, 0.08); border-radius: 12px; padding: 1.25rem; border: 1px solid rgba(16, 185, 129, 0.2); margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.75rem; font-size: 1.05rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                <span>🟢</span> Dados de Conclusão
+            </h4>
+            <div>
+                <p style="color: var(--text-muted); font-size: 0.78rem; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.05em;">Data de Conclusão</p>
+                <p id="det-data-conclusao" style="font-weight: 600; font-size: 0.95rem; margin: 0; color: var(--text-main);"></p>
+            </div>
+        </div>
+
         <hr style="border-color: var(--border-color); margin-bottom: 1.5rem;">
 
         <!-- Botão Acionar Equipe Técnica (dentro do modal de detalhes) -->
-        <div style="background: rgba(220,38,38,0.06); border-radius: 12px; padding: 1.25rem; border: 1px solid rgba(220,38,38,0.15);">
+        <div id="det-acionamento-box" style="background: rgba(220,38,38,0.06); border-radius: 12px; padding: 1.25rem; border: 1px solid rgba(220,38,38,0.15);">
             <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0 0 1rem;">👷 Selecione o líder da equipe técnica responsável por este chamado:</p>
             <div class="form-group" style="margin-bottom: 1rem;">
                 <select id="selecao-lider" class="input-field" required>
@@ -263,8 +332,13 @@
                 <button class="btn btn-primary" style="flex: 1; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="confirmarAcionamento()">
                     <span>⚡</span> Acionar Equipe Técnica
                 </button>
-                <button class="btn btn-secondary" onclick="closeModalDetalhes()">Cancelar</button>
+                <button class="btn btn-secondary" onclick="closeModalDetalhes()">Fechar</button>
             </div>
+        </div>
+
+        <!-- Botão Fechar Geral para chamados que não necessitam de acionamento de equipe -->
+        <div id="det-fechar-geral" style="display: none; margin-top: 1rem;">
+            <button class="btn btn-secondary" style="width: 100%;" onclick="closeModalDetalhes()">Fechar</button>
         </div>
 
         <input type="hidden" id="acionamento-chamado-id">
@@ -293,6 +367,40 @@
         });
     }
 
+    /**
+     * Converte horas decimais em formato legível: "X horas e Y minutos"
+     * Ex: 3.7 => "3 horas e 42 minutos" | 0.5 => "30 minutos" | 1.0 => "1 hora"
+     */
+    function formatarTempo(horas) {
+        if (!horas && horas !== 0) return 'N/A';
+        const h = Math.floor(horas);
+        const min = Math.round((horas - h) * 60);
+        
+        if (h === 0) {
+            return min === 1 ? '1 minuto' : `${min} minutos`;
+        }
+        
+        const hStr = h === 1 ? '1 hora' : `${h} horas`;
+        if (min === 0) {
+            return hStr;
+        }
+        
+        const minStr = min === 1 ? '1 minuto' : `${min} minutos`;
+        return `${hStr} e ${minStr}`;
+    }
+
+    // Lista de técnicos cadastrados no sistema (injetados a partir do banco de dados)
+    const todosTecnicos = [
+        {% for tec in tecnicos %}
+        {
+            id: {{ tec.id }},
+            nome: "{{ tec.nome }} {{ tec.sobrenome }}",
+            equipe: "{{ tec.equipe or '' }}",
+            funcao: "{{ tec.funcao or '' }}"
+        },
+        {% endfor %}
+    ];
+
     function abrirModalDetalhes(card) {
         const id        = card.dataset.id;
         const categoria = card.dataset.categoria;
@@ -303,6 +411,11 @@
         const usuario   = card.dataset.usuario;
         const tempo     = card.dataset.tempo;
         const abertura  = card.dataset.abertura;
+        const status    = card.dataset.status || 'ABERTO';
+
+        const inicio    = card.dataset.inicio;
+        const conclusao = card.dataset.conclusao;
+        const equipe    = card.dataset.equipe;
 
         // Preencher campos
         document.getElementById('det-id').textContent        = '#' + id;
@@ -311,7 +424,7 @@
         document.getElementById('det-setor').textContent     = setor;
         document.getElementById('det-detalhes').textContent  = detalhes;
         document.getElementById('det-usuario').textContent   = usuario;
-        document.getElementById('det-tempo').textContent     = tempo ? tempo + ' h' : 'N/A';
+        document.getElementById('det-tempo').textContent     = formatarTempo(parseFloat(tempo));
         document.getElementById('det-abertura').textContent  = abertura;
 
         // Prioridade com cor
@@ -322,18 +435,67 @@
         // Imagem (sistema não possui campo imagem ainda, oculta o bloco)
         document.getElementById('det-imagem-box').style.display = 'none';
 
-        // Filtrar técnicos por categoria
-        const selectLider = document.getElementById('selecao-lider');
-        let equipeAlvo = '';
-        if(categoria.includes('ELÉTRICA'))       equipeAlvo = 'ELÉTRICA';
-        if(categoria.includes('HIDRÁULICA'))     equipeAlvo = 'HIDRÁULICA';
-        if(categoria.includes('ESTRUTURAL'))     equipeAlvo = 'ESTRUTURAL';
-        if(categoria.includes('CLIMATIZAÇÃO'))   equipeAlvo = 'CLIMATIZAÇÃO';
-        if(categoria.includes('SERVIÇOS GERAIS'))equipeAlvo = 'SERVIÇOS GERAIS';
+        // Configuração de visibilidade com base no status do chamado
+        if (status === 'ABERTO') {
+            document.getElementById('det-atendimento-box').style.display = 'none';
+            document.getElementById('det-conclusao-box').style.display = 'none';
+            document.getElementById('det-acionamento-box').style.display = 'block';
+            document.getElementById('det-fechar-geral').style.display = 'none';
 
-        Array.from(selectLider.options).forEach(opt => {
-            opt.style.display = (!equipeAlvo || opt.dataset.equipe === equipeAlvo) ? '' : 'none';
-        });
+            // Filtrar técnicos por categoria
+            const selectLider = document.getElementById('selecao-lider');
+            let equipeAlvo = '';
+            if(categoria.includes('ELÉTRICA'))       equipeAlvo = 'ELÉTRICA';
+            if(categoria.includes('HIDRÁULICA'))     equipeAlvo = 'HIDRÁULICA';
+            if(categoria.includes('ESTRUTURAL'))     equipeAlvo = 'ESTRUTURAL';
+            if(categoria.includes('CLIMATIZAÇÃO'))   equipeAlvo = 'CLIMATIZAÇÃO';
+            if(categoria.includes('SERVIÇOS GERAIS'))equipeAlvo = 'SERVIÇOS GERAIS';
+
+            Array.from(selectLider.options).forEach(opt => {
+                opt.style.display = (!equipeAlvo || opt.dataset.equipe === equipeAlvo) ? '' : 'none';
+            });
+            
+            // Auto selecionar primeiro líder visível
+            const firstVisible = Array.from(selectLider.options).find(opt => opt.style.display !== 'none');
+            if (firstVisible) selectLider.value = firstVisible.value;
+        } 
+        else if (status === 'ATENDIMENTO INICIADO' || status === 'EQUIPE TÉCNICA ACIONADA') {
+            document.getElementById('det-atendimento-box').style.display = 'block';
+            document.getElementById('det-conclusao-box').style.display = 'none';
+            document.getElementById('det-acionamento-box').style.display = 'none';
+            document.getElementById('det-fechar-geral').style.display = 'block';
+
+            document.getElementById('det-data-inicio').textContent = inicio || 'N/A';
+            document.getElementById('det-equipe-responsavel').textContent = equipe || 'N/A';
+
+            // Listar técnicos atuando na equipe
+            const tecsFiltrados = todosTecnicos.filter(t => t.equipe === equipe);
+            if (tecsFiltrados.length > 0) {
+                const tecsNomes = tecsFiltrados.map(t => `${t.nome} (${t.funcao})`).join(', ');
+                document.getElementById('det-tecnicos-atuando').textContent = tecsNomes;
+            } else {
+                document.getElementById('det-tecnicos-atuando').textContent = 'Nenhum técnico alocado nesta equipe.';
+            }
+        } 
+        else if (status === 'CONCLUÍDO') {
+            document.getElementById('det-atendimento-box').style.display = 'block';
+            document.getElementById('det-conclusao-box').style.display = 'block';
+            document.getElementById('det-acionamento-box').style.display = 'none';
+            document.getElementById('det-fechar-geral').style.display = 'block';
+
+            document.getElementById('det-data-inicio').textContent = inicio || 'N/A';
+            document.getElementById('det-equipe-responsavel').textContent = equipe || 'N/A';
+            document.getElementById('det-data-conclusao').textContent = conclusao || 'N/A';
+
+            // Listar técnicos que atuaram na equipe
+            const tecsFiltrados = todosTecnicos.filter(t => t.equipe === equipe);
+            if (tecsFiltrados.length > 0) {
+                const tecsNomes = tecsFiltrados.map(t => `${t.nome} (${t.funcao})`).join(', ');
+                document.getElementById('det-tecnicos-atuando').textContent = tecsNomes;
+            } else {
+                document.getElementById('det-tecnicos-atuando').textContent = 'Nenhum técnico cadastrado para esta equipe.';
+            }
+        }
 
         // Guardar dados para acionamento
         document.getElementById('acionamento-chamado-id').value = id;

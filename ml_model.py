@@ -27,7 +27,7 @@ def train_initial_model():
     
     df = pd.DataFrame(dados)
     
-    # Criando uma lógica de tempo (horas) baseada nas features
+    # lógica de tempo baseado nos detalhes
     tempos = []
     for index, row in df.iterrows():
         tempo = np.random.uniform(1.0, 4.0) # Base time
@@ -37,11 +37,11 @@ def train_initial_model():
         if row['categoria'] == 'MANUTENÇÃO ELÉTRICA': tempo += 2.0
         if row['historico_tecnico'] == 'INICIANTE': tempo += 3.0
         if row['historico_tecnico'] == 'EXCELENTE': tempo -= 1.0
-        tempos.append(max(0.5, tempo + np.random.normal(0, 0.5))) # Adding noise
+        tempos.append(max(0.5, tempo + np.random.normal(0, 0.5))) # Margem
         
     df['tempo_conclusao_horas'] = tempos
     
-    # Encode categorical variables
+    # variáveis categóricas
     encoders = {}
     for col in ['categoria', 'prioridade', 'setor', 'historico_tecnico']:
         le = LabelEncoder()

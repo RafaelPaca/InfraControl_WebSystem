@@ -18,7 +18,7 @@ describe('Ticket Logic UI', () => {
             <div id="modal-chamado" style="display: none;"></div>
         `;
         
-        // Simular o comportamento do ticket_logic.js para o teste
+        // ticket_logic.js para o teste
         const categoriaSelect = document.getElementById('categoria');
         const problemaSelect = document.getElementById('problema');
         

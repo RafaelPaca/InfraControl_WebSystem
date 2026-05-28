@@ -248,6 +248,28 @@
         });
     }
 
+    /**
+     * Converte horas decimais em formato legível: "X horas e Y minutos"
+     * Ex: 3.7 => "3 horas e 42 minutos" | 0.5 => "30 minutos" | 1.0 => "1 hora"
+     */
+    function formatarTempo(horas) {
+        if (!horas && horas !== 0) return 'N/A';
+        const h = Math.floor(horas);
+        const min = Math.round((horas - h) * 60);
+        
+        if (h === 0) {
+            return min === 1 ? '1 minuto' : `${min} minutos`;
+        }
+        
+        const hStr = h === 1 ? '1 hora' : `${h} horas`;
+        if (min === 0) {
+            return hStr;
+        }
+        
+        const minStr = min === 1 ? '1 minuto' : `${min} minutos`;
+        return `${hStr} e ${minStr}`;
+    }
+
     function abrirModalDetalhes(card) {
         const id        = card.dataset.id;
         const categoria = card.dataset.categoria;
@@ -267,7 +289,7 @@
         document.getElementById('det-setor').textContent     = setor;
         document.getElementById('det-detalhes').textContent  = detalhes;
         document.getElementById('det-usuario').textContent   = usuario;
-        document.getElementById('det-tempo').textContent     = tempo ? tempo + ' h' : 'N/A';
+        document.getElementById('det-tempo').textContent     = formatarTempo(parseFloat(tempo));
         document.getElementById('det-abertura').textContent  = abertura;
 
         // Prioridade com cor

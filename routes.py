@@ -226,7 +226,22 @@ def api_chamados():
 def api_chamado_detail(id):
     chamado = Chamado.query.get_or_404(id)
     if request.method == 'GET':
-        return jsonify({'id': chamado.id, 'status': chamado.status, 'categoria': chamado.categoria})
+        return jsonify({
+            'id': chamado.id,
+            'status': chamado.status,
+            'categoria': chamado.categoria,
+            'problema': chamado.problema,
+            'prioridade': chamado.prioridade,
+            'detalhes': chamado.detalhes or '',
+            'setor': chamado.setor_local.nome if chamado.setor_local else 'N/A',
+            'solicitante': f"{chamado.solicitante.nome} {chamado.solicitante.sobrenome}" if chamado.solicitante else 'N/A',
+            'data_abertura': chamado.data_abertura.strftime('%d/%m/%Y %H:%M') if chamado.data_abertura else '',
+            'data_inicio': chamado.data_inicio.strftime('%d/%m/%Y %H:%M') if chamado.data_inicio else '',
+            'data_conclusao': chamado.data_conclusao.strftime('%d/%m/%Y %H:%M') if chamado.data_conclusao else '',
+            'equipe_responsavel': chamado.equipe_responsavel or '',
+            'tecnico_lider': f"{chamado.tecnico_lider.nome} {chamado.tecnico_lider.sobrenome}" if chamado.tecnico_lider else '',
+            'tempo_estimado': chamado.tempo_estimado,
+        })
     else:
         data = request.json
         # update status logic
