@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(res => res.json())
             .then(data => {
-                alert('Chamado aberto com sucesso! Tempo estimado de conclusão (ML): ' + data.tempo_estimado + ' horas.');
+                alert('Chamado aberto com sucesso! Tempo estimado de conclusão (ML): ' + formatarTempo(data.tempo_estimado) + '.');
                 window.location.reload();
             })
             .catch(err => {
