@@ -303,6 +303,19 @@ def api_metricas():
         concluidos = Chamado.query.filter_by(status='CONCLUÍDO').count()
         return jsonify({'abertos': abertos, 'em_atendimento': em_atendimento, 'concluidos': concluidos})
 
+@bp.route('/api/dashboard/gestor/chamados', methods=['GET'])
+@login_required
+def api_gestor_chamados():
+    if current_user.perfil != 'Gestor' and current_user.perfil != 'Admin':
+        return jsonify({'error': 'Não autorizado'}), 403
+    chamados = Chamado.query.all()
+    return jsonify([{
+        'id': c.id,
+        'status': c.status,
+        'prioridade': c.prioridade,
+        'categoria': c.categoria
+    } for c in chamados])
+
 @bp.route('/api/dashboard/previsao', methods=['POST'])
 def api_previsao():
     data = request.json

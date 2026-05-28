@@ -34,15 +34,20 @@
 <div id="dash-graficos" class="dashboard-section" style="display: none;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--bg-card); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
         <h3 style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-main);">Dashboard</h3>
-        
+        <button id="btn-reset-filtros" class="btn btn-secondary" style="display: none; padding: 0.6rem 1.25rem; font-size: 0.95rem; border-radius: 10px; align-items: center; gap: 6px;" onclick="resetFiltros()">
+            <span>🧹</span> Limpar Filtros
+        </button>
     </div>
     
-    <div class="form-row" style="margin-top: 2rem; justify-content: center; flex-wrap: wrap;">
-        <div class="form-group" style="background: rgba(255, 255, 255, 0.55); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); max-width: 450px; width: 100%; margin: 10px;">
+    <div class="form-row" style="margin-top: 2rem; justify-content: center; flex-wrap: wrap; gap: 1rem;">
+        <div class="form-group" style="background: rgba(255, 255, 255, 0.55); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); max-width: 400px; width: 100%; margin: 0; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'">
             <canvas id="chartGeralStatus"></canvas>
         </div>
-        <div class="form-group" style="background: rgba(255, 255, 255, 0.55); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); max-width: 450px; width: 100%; margin: 10px;">
+        <div class="form-group" style="background: rgba(255, 255, 255, 0.55); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); max-width: 400px; width: 100%; margin: 0; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'">
             <canvas id="chartGeralCategoria"></canvas>
+        </div>
+        <div class="form-group" style="background: rgba(255, 255, 255, 0.55); backdrop-filter: var(--glass-blur); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); max-width: 400px; width: 100%; margin: 0; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.01)'" onmouseout="this.style.transform='scale(1)'">
+            <canvas id="chartGeralPrioridade"></canvas>
         </div>
     </div>
 </div>
@@ -539,58 +544,241 @@
         if (e.target === modalDet) closeModalDetalhes();
     });
 
+    let todosChamados = [];
+    let filtroStatus = null; // 'Abertos', 'Em Atendimento', 'Concluídos'
+    let filtroCategoria = null; // 'Elétrica', 'Hidráulica', 'Estrutural', 'Clima', 'Gerais'
+    let filtroPrioridade = null; // 'ALTA', 'MÉDIA', 'BAIXA'
+
+    let chartStatusInstance = null;
+    let chartCategoriaInstance = null;
+    let chartPrioridadeInstance = null;
+
+    function normalizarCategoria(cat) {
+        if (!cat) return 'Gerais';
+        const c = cat.toUpperCase();
+        if (c.includes('ELÉTRICA')) return 'Elétrica';
+        if (c.includes('HIDRÁULICA')) return 'Hidráulica';
+        if (c.includes('ESTRUTURAL')) return 'Estrutural';
+        if (c.includes('CLIMATIZAÇÃO')) return 'Clima';
+        return 'Gerais';
+    }
+
+    function normalizarStatus(status) {
+        if (status === 'ABERTO') return 'Abertos';
+        if (status === 'CONCLUÍDO') return 'Concluídos';
+        return 'Em Atendimento'; // EQUIPE TÉCNICA ACIONADA ou ATENDIMENTO INICIADO
+    }
+
+    function resetFiltros() {
+        filtroStatus = null;
+        filtroCategoria = null;
+        filtroPrioridade = null;
+        atualizarTodosGraficos();
+    }
+
+    function atualizarTodosGraficos() {
+        // 1. Calcular contagens para o gráfico de Status (filtrado por Categoria e Prioridade)
+        const dadosStatus = todosChamados.filter(c => {
+            const matchesCategoria = !filtroCategoria || normalizarCategoria(c.categoria) === filtroCategoria;
+            const matchesPrioridade = !filtroPrioridade || c.prioridade === filtroPrioridade;
+            return matchesCategoria && matchesPrioridade;
+        });
+        const statusCounts = { 'Abertos': 0, 'Em Atendimento': 0, 'Concluídos': 0 };
+        dadosStatus.forEach(c => {
+            statusCounts[normalizarStatus(c.status)]++;
+        });
+
+        // 2. Calcular contagens para o gráfico de Categoria (filtrado por Status e Prioridade)
+        const dadosCategoria = todosChamados.filter(c => {
+            const matchesStatus = !filtroStatus || normalizarStatus(c.status) === filtroStatus;
+            const matchesPrioridade = !filtroPrioridade || c.prioridade === filtroPrioridade;
+            return matchesStatus && matchesPrioridade;
+        });
+        const catCounts = { 'Elétrica': 0, 'Hidráulica': 0, 'Estrutural': 0, 'Clima': 0, 'Gerais': 0 };
+        dadosCategoria.forEach(c => {
+            catCounts[normalizarCategoria(c.categoria)]++;
+        });
+
+        // 3. Calcular contagens para o gráfico de Prioridade (filtrado por Status e Categoria)
+        const dadosPrioridade = todosChamados.filter(c => {
+            const matchesStatus = !filtroStatus || normalizarStatus(c.status) === filtroStatus;
+            const matchesCategoria = !filtroCategoria || normalizarCategoria(c.categoria) === filtroCategoria;
+            return matchesStatus && matchesCategoria;
+        });
+        const prioCounts = { 'ALTA': 0, 'MÉDIA': 0, 'BAIXA': 0 };
+        dadosPrioridade.forEach(c => {
+            prioCounts[c.prioridade || 'BAIXA']++;
+        });
+
+        // --- CORES COM EFEITO DE SELEÇÃO (Filtros Ativos) ---
+        
+        // Status: ['Abertos', 'Em Atendimento', 'Concluídos']
+        // Cores originais: ['#dc2626', '#d97706', '#059669']
+        const bgStatus = ['#dc2626', '#d97706', '#059669'].map((cor, idx) => {
+            const labels = ['Abertos', 'Em Atendimento', 'Concluídos'];
+            if (!filtroStatus) return cor;
+            return filtroStatus === labels[idx] ? cor : cor + '33'; // 33 é ~20% opacidade em HEX
+        });
+
+        // Categoria: ['Elétrica', 'Hidráulica', 'Estrutural', 'Clima', 'Gerais']
+        // Cores originais: '#2563eb' (Azul)
+        const corBaseCat = '#2563eb';
+        const bgCategoria = ['Elétrica', 'Hidráulica', 'Estrutural', 'Clima', 'Gerais'].map(label => {
+            if (!filtroCategoria) return corBaseCat;
+            return filtroCategoria === label ? corBaseCat : corBaseCat + '33';
+        });
+
+        // Prioridade: ['Alta', 'Média', 'Baixa']
+        // Cores originais: ['#dc2626', '#d97706', '#2563eb']
+        const bgPrioridade = ['#dc2626', '#d97706', '#2563eb'].map((cor, idx) => {
+            const labels = ['ALTA', 'MÉDIA', 'BAIXA'];
+            if (!filtroPrioridade) return cor;
+            return filtroPrioridade === labels[idx] ? cor : cor + '33';
+        });
+
+        // --- ATUALIZAR DADOS E ESTILOS NAS INSTÂNCIAS ---
+        
+        chartStatusInstance.data.datasets[0].data = [
+            statusCounts['Abertos'],
+            statusCounts['Em Atendimento'],
+            statusCounts['Concluídos']
+        ];
+        chartStatusInstance.data.datasets[0].backgroundColor = bgStatus;
+        chartStatusInstance.update();
+
+        chartCategoriaInstance.data.datasets[0].data = [
+            catCounts['Elétrica'],
+            catCounts['Hidráulica'],
+            catCounts['Estrutural'],
+            catCounts['Clima'],
+            catCounts['Gerais']
+        ];
+        chartCategoriaInstance.data.datasets[0].backgroundColor = bgCategoria;
+        chartCategoriaInstance.update();
+
+        chartPrioridadeInstance.data.datasets[0].data = [
+            prioCounts['ALTA'],
+            prioCounts['MÉDIA'],
+            prioCounts['BAIXA']
+        ];
+        chartPrioridadeInstance.data.datasets[0].backgroundColor = bgPrioridade;
+        chartPrioridadeInstance.update();
+
+        // Exibir ou ocultar o botão de limpar filtros
+        const btnReset = document.getElementById('btn-reset-filtros');
+        if (filtroStatus || filtroCategoria || filtroPrioridade) {
+            btnReset.style.display = 'flex';
+        } else {
+            btnReset.style.display = 'none';
+        }
+    }
+
     // Chart.js init
     document.addEventListener('DOMContentLoaded', function() {
-        fetch('/api/dashboard/metricas')
+        fetch('/api/dashboard/gestor/chamados')
             .then(res => res.json())
             .then(data => {
+                todosChamados = data;
+
+                // --- 1. GRÁFICO DE STATUS ---
                 const ctxStatus = document.getElementById('chartGeralStatus').getContext('2d');
-                new Chart(ctxStatus, {
+                chartStatusInstance = new Chart(ctxStatus, {
                     type: 'doughnut',
                     data: {
                         labels: ['Abertos', 'Em Atendimento', 'Concluídos'],
                         datasets: [{
-                            data: [data.abertos, data.em_atendimento, data.concluidos],
+                            data: [0, 0, 0],
                             backgroundColor: ['#dc2626', '#d97706', '#059669'],
                             borderColor: '#ffffff'
                         }]
                     },
-                    options: { plugins: { title: { display: true, text: 'Status Geral', color: '#1e293b' }, legend: { labels: { color: '#1e293b' } } } }
+                    options: {
+                        plugins: {
+                            title: { display: true, text: '🔍 Status Geral (Clique para filtrar)', color: '#1e293b', font: { weight: 'bold', size: 14 } },
+                            legend: { labels: { color: '#1e293b' } }
+                        },
+                        onClick: (event, elements) => {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const label = chartStatusInstance.data.labels[index];
+                                filtroStatus = (filtroStatus === label) ? null : label;
+                                atualizarTodosGraficos();
+                            }
+                        }
+                    }
                 });
 
+                // --- 2. GRÁFICO POR CATEGORIA ---
                 const ctxCat = document.getElementById('chartGeralCategoria').getContext('2d');
-                new Chart(ctxCat, {
+                chartCategoriaInstance = new Chart(ctxCat, {
                     type: 'bar',
                     data: {
                         labels: ['Elétrica', 'Hidráulica', 'Estrutural', 'Clima', 'Gerais'],
                         datasets: [{
                             label: 'Chamados',
-                            data: [5, 2, 4, 1, 6],
+                            data: [0, 0, 0, 0, 0],
                             backgroundColor: '#2563eb'
                         }]
                     },
-                    options: { 
-                        plugins: { 
-                            title: { display: true, text: 'Por Categoria', color: '#1e293b' }, 
-                            legend: { labels: { color: '#1e293b' } } 
-                        }, 
-                        scales: { 
-                            y: { 
+                    options: {
+                        plugins: {
+                            title: { display: true, text: '📊 Por Categoria (Clique para filtrar)', color: '#1e293b', font: { weight: 'bold', size: 14 } },
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
                                 beginAtZero: true,
-                                ticks: { 
+                                ticks: {
                                     color: '#475569',
                                     stepSize: 2,
                                     callback: function(value) {
-                                        if (value % 1 === 0) {
-                                            return value;
-                                        }
+                                        if (value % 1 === 0) return value;
                                     }
-                                } 
-                            }, 
-                            x: { ticks: { color: '#475569' } } 
-                        } 
+                                }
+                            },
+                            x: { ticks: { color: '#475569' } }
+                        },
+                        onClick: (event, elements) => {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const label = chartCategoriaInstance.data.labels[index];
+                                filtroCategoria = (filtroCategoria === label) ? null : label;
+                                atualizarTodosGraficos();
+                            }
+                        }
                     }
                 });
+
+                // --- 3. GRÁFICO DE PIZZA DE PRIORIDADES ---
+                const ctxPrio = document.getElementById('chartGeralPrioridade').getContext('2d');
+                chartPrioridadeInstance = new Chart(ctxPrio, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Alta', 'Média', 'Baixa'],
+                        datasets: [{
+                            data: [0, 0, 0],
+                            backgroundColor: ['#dc2626', '#d97706', '#2563eb'],
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            title: { display: true, text: '⏱️ Prioridades (Clique para filtrar)', color: '#1e293b', font: { weight: 'bold', size: 14 } },
+                            legend: { labels: { color: '#1e293b' } }
+                        },
+                        onClick: (event, elements) => {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const label = ['ALTA', 'MÉDIA', 'BAIXA'][index];
+                                filtroPrioridade = (filtroPrioridade === label) ? null : label;
+                                atualizarTodosGraficos();
+                            }
+                        }
+                    }
+                });
+
+                // Inicializar com os dados da API
+                atualizarTodosGraficos();
             });
     });
 </script>
